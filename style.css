@@ -255,3 +255,38 @@ hr {
     width: 50%;
     margin: 20px auto;
 }
+
+/* === PERSONALIZACIÓN DE ALERTAS (SweetAlert2) === */
+
+/* Fondo del popup */
+div:where(.swal2-container) div:where(.swal2-popup) {
+    background-color: var(--bg-body) !important; /* Tu fondo oscuro */
+    border: 1px solid var(--brand-purple);
+    box-shadow: 0 0 20px rgba(160, 68, 255, 0.2);
+}
+
+/* Título */
+div:where(.swal2-container) h2:where(.swal2-title) {
+    color: var(--accent-cyan) !important;
+    text-shadow: 0 0 5px rgba(0, 242, 255, 0.3);
+}
+
+/* Texto */
+div:where(.swal2-container) div:where(.swal2-html-container) {
+    color: var(--text-main) !important;
+}
+
+/* Botón de confirmar */
+div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm {
+    background: var(--btn-gradient) !important;
+    box-shadow: 0 0 10px rgba(160, 68, 255, 0.4);
+}
+
+/* Icono de éxito (Green) */
+div:where(.swal2-icon).swal2-success {
+    border-color: var(--accent-green) !important;
+    color: var(--accent-green) !important;
+}
+div:where(.swal2-icon).swal2-success [class^='swal2-success-line'] {
+    background-color: var(--accent-green) !important;
+}

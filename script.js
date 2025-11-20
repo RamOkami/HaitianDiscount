@@ -1,11 +1,9 @@
-/* CONFIGURACIÓN INICIAL
-   Edita este valor manualmente cuando quieras cambiar el saldo.
-*/
+/* CONFIGURACIÓN INICIAL */
 let presupuestoActual = 50000; 
 
-// KEYS DE EMAILJS (REEMPLÁZALAS CON LAS TUYAS)
-const SERVICE_ID = 'service_896cvbo';   // Ej: service_x8ds9
-const TEMPLATE_ID = 'template_s5dbw9i'; // Ej: template_34fd9
+// TUS KEYS DE EMAILJS
+const SERVICE_ID = 'service_896cvbo';   
+const TEMPLATE_ID = 'template_s5dbw9i'; 
 
 // Referencias
 const displayTope = document.getElementById('tope-dinero');
@@ -29,8 +27,14 @@ function calcularDescuento() {
     const resultadoDiv = document.getElementById('resultado');
     const alerta = document.getElementById('alerta-presupuesto');
 
+    // Alerta si no hay precio
     if (!precioInput || precioInput <= 0) {
-        alert("Por favor ingresa un precio válido del juego.");
+        Swal.fire({
+            icon: 'warning',
+            title: '¡Falta el precio!',
+            text: 'Por favor ingresa cuánto cuesta el juego en Steam.',
+            confirmButtonText: 'Entendido'
+        });
         return;
     }
 
@@ -42,47 +46,73 @@ function calcularDescuento() {
     document.getElementById('res-original').innerText = formatoDinero(precio);
     document.getElementById('res-final').innerText = formatoDinero(precioFinal);
     
-    // Guardar en input oculto
     inputPrecioFinal.value = formatoDinero(precioFinal);
 
     // Validar presupuesto
     if (precioFinal > presupuestoActual) {
         alerta.style.display = 'block';
         btnEnviar.classList.remove('active'); 
-        alert("Lo siento, el valor del juego supera mi tope actual.");
+        
+        // Alerta de presupuesto excedido
+        Swal.fire({
+            icon: 'error',
+            title: 'Presupuesto Excedido',
+            text: 'Lo siento, el valor del juego supera mi tope disponible por hoy 😔.',
+            confirmButtonText: 'Ok, intentaré otro día'
+        });
     } else {
         alerta.style.display = 'none';
         btnEnviar.classList.add('active');
     }
 }
 
-// 2. ENVIAR FORMULARIO CON EMAILJS
+// 2. ENVIAR FORMULARIO
 form.addEventListener('submit', function(event) {
-    event.preventDefault(); // Evita que la página se recargue
+    event.preventDefault(); 
 
-    // Validación extra por seguridad
+    // Validación extra
     if (!btnEnviar.classList.contains('active')) {
-        alert("Primero debes calcular el descuento y verificar disponibilidad.");
+        Swal.fire({
+            icon: 'info',
+            title: 'Calcula primero',
+            text: 'Debes calcular el descuento antes de enviar el pedido.',
+            confirmButtonText: '¡Ah, verdad!'
+        });
         return;
     }
 
-    // Cambiar texto del botón para feedback visual
-    const textoOriginal = btnEnviar.innerText;
-    btnEnviar.innerText = 'Enviando...';
-    btnEnviar.disabled = true;
+    // Mostrar alerta de "Cargando..."
+    Swal.fire({
+        title: 'Enviando pedido...',
+        html: 'Por favor espera un momento.',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
 
     // Enviar con EmailJS
     emailjs.sendForm(SERVICE_ID, TEMPLATE_ID, this)
         .then(() => {
-            alert('¡Pedido enviado con éxito! Revisa tu correo (y spam) para la confirmación.');
-            btnEnviar.innerText = textoOriginal;
-            btnEnviar.disabled = false;
-            form.reset(); // Limpiar formulario
+            // Éxito
+            Swal.fire({
+                icon: 'success',
+                title: '¡Pedido Enviado!',
+                text: 'Revisa tu correo (y spam) para la confirmación. Te contactaré pronto.',
+                confirmButtonText: '¡Genial!'
+            });
+
+            btnEnviar.innerText = '2. Enviar Pedido';
+            form.reset(); 
             document.getElementById('resultado').style.display = 'none';
             btnEnviar.classList.remove('active');
         }, (error) => {
-            alert('Hubo un error al enviar: ' + JSON.stringify(error));
-            btnEnviar.innerText = textoOriginal;
-            btnEnviar.disabled = false;
+            // Error
+            Swal.fire({
+                icon: 'error',
+                title: 'Error al enviar',
+                text: 'Algo falló. Por favor contáctame por Instagram.',
+                footer: 'Código de error: ' + JSON.stringify(error)
+            });
         });
 });
