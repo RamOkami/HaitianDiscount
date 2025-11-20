@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HaitianDiscount</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script type="text/javascript">
+       (function(){
+          // REEMPLAZA "TU_PUBLIC_KEY" CON TU PUBLIC KEY DE EMAILJS
+          emailjs.init("KuBkrJG6RziEyJpBl");
+       })();
+    </script>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">Haitian Discount</div>
+        <ul>
+            <li><a href="#home">Inicio</a></li>
+            <li><a href="#presupuesto">Disponibilidad</a></li>
+            <li><a href="#pedido">Hacer Pedido</a></li>
+            <li><a href="#contacto">Contacto</a></li>
+        </ul>
+    </nav>
+
+    <section id="home">
+        <h1>¡Tus juegos favoritos con un Descuento Especial!</h1>
+        <p>Bienvenido. Compro juegos de Steam y te los revendo con descuento.</p>
+        <p><strong>¿Cómo funciona?</strong> Revisa mi saldo disponible, llena el formulario, calcula tu descuento y envíame la solicitud.</p>
+    </section>
+
+    <section id="presupuesto">
+        <h2>Disponibilidad Actual</h2>
+        <div class="budget-box">
+            <p>Tope máximo disponible para compras hoy:</p>
+            <div id="tope-dinero">$0 CLP</div>
+            <small>Si el juego vale más que esto, no podré procesar tu pedido.</small>
+        </div>
+    </section>
+
+    <section id="pedido">
+        <h2>Solicitar Juego</h2>
+        
+        <form id="gameForm">
+            <label>Correo Electrónico (Para enviarte la copia)</label>
+            <input type="email" name="email" id="email" required placeholder="tu@correo.com">
+
+            <label>Nombre y Apellido</label>
+            <input type="text" name="nombre" required placeholder="Juan Pérez">
+
+            <label>RUT</label>
+            <input type="text" name="rut" required placeholder="12.345.678-9">
+
+            <label>Nombre del Juego (Steam)</label>
+            <input type="text" name="juego" required placeholder="Ej: Elden Ring">
+
+            <label>Precio en Steam (CLP)</label>
+            <input type="number" id="precioSteam" name="precio_original" required placeholder="Ej: 40000">
+
+            <label>Usuario de Steam (Opcional)</label>
+            <input type="text" name="steam_user" placeholder="Tu ID o URL de perfil">
+
+            <input type="hidden" name="precio_final_descuento" id="precioFinalInput">
+            <input type="hidden" name="to_name" value="Admin Steam Pyme">
+
+            <div id="resultado">
+                <p>Precio Original: <span id="res-original"></span></p>
+                <p class="precio-final-text">
+                    Precio a Pagar (-30%): <span id="res-final"></span>
+                </p>
+                <p id="alerta-presupuesto" class="alerta hidden">
+                    ⚠️ El juego excede mi presupuesto actual. No puedo comprarlo.
+                </p>
+            </div>
+
+            <div class="btn-group">
+                <button type="button" class="btn-calc" onclick="calcularDescuento()">1. Calcular Descuento</button>
+                <button type="submit" class="btn-send" id="btnEnviar">2. Enviar Pedido</button>
+            </div>
+        </form>
+    </section>
+
+    <footer id="contacto">
+        <p>¿Dudas?</p>
+        <p>📧 Contacto: mipyme@correo.com</p>
+        <p>📷 Instagram: PROXIMAMENTE</p>
+        <hr>
+        <p>&copy; 2024 Venta de Juegos HaitianDiscount</p>
+    </footer>
+
+    <script src="script.js"></script>
+
+</body>
+</html>

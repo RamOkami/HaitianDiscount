@@ -1,0 +1,257 @@
+/* VARIABLES DE COLOR - TEMA "DARK PURPLE GAMING" */
+:root {
+    /* Tu color base solicitado */
+    --brand-purple: #392853;
+    
+    /* Colores derivados */
+    --bg-body: #1a1225;        /* Morado casi negro para el fondo */
+    --bg-input: #251a36;       /* Morado oscuro para inputs */
+    --text-main: #e2d9f3;      /* Lavanda claro para leer bien */
+    --accent-cyan: #ff0080;    /* Cyan neón para bordes/hover */
+    --accent-green: #00ff88;   /* Verde neón para dinero/éxito */
+    --btn-gradient: linear-gradient(135deg, #6a3093, #a044ff);
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-body);
+    color: var(--text-main);
+}
+
+/* NAV */
+nav {
+    background-color: var(--brand-purple);
+    padding: 1rem;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    border-bottom: 2px solid var(--accent-cyan); /* Borde neón */
+    box-shadow: 0 0 15px rgba(160, 68, 255, 0.4); /* Resplandor morado */
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    color: white;
+    font-weight: bold;
+    margin-left: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-shadow: 0 0 5px var(--accent-cyan);
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    margin-right: 2rem;
+}
+
+nav ul li {
+    margin-left: 20px;
+}
+
+nav a {
+    color: var(--text-main);
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+nav a:hover {
+    color: var(--accent-cyan);
+    text-shadow: 0 0 8px var(--accent-cyan);
+}
+
+/* SECCIONES */
+section {
+    padding: 100px 20px 60px; /* Un poco más de padding arriba por el nav fijo */
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+/* HERO / HOME */
+#home {
+    margin-top: 40px;
+    /* Degradado suave usando tu color */
+    background: linear-gradient(to bottom, var(--brand-purple), var(--bg-body));
+    border-radius: 15px;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+h1 { 
+    color: white; 
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+h2 { 
+    color: var(--accent-cyan); 
+    border-bottom: 2px solid var(--brand-purple);
+    display: inline-block;
+    padding-bottom: 10px;
+}
+
+/* PRESUPUESTO */
+.budget-box {
+    background-color: var(--brand-purple);
+    padding: 30px;
+    border-radius: 15px;
+    border: 1px solid #58407b;
+    margin: 20px 0;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+}
+
+#tope-dinero {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--accent-green);
+    text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+    margin: 10px 0;
+}
+
+small { color: #aaa; font-style: italic; }
+
+/* FORMULARIO */
+form {
+    background-color: var(--brand-purple);
+    padding: 40px;
+    border-radius: 15px;
+    text-align: left;
+    box-shadow: 0 0 30px rgba(0,0,0,0.5); /* Sombra fuerte */
+    border: 1px solid #58407b;
+}
+
+label {
+    display: block;
+    margin-top: 20px;
+    font-weight: bold;
+    color: white;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    margin-top: 8px;
+    background-color: var(--bg-input);
+    border: 1px solid #58407b;
+    color: white;
+    border-radius: 6px;
+    box-sizing: border-box;
+    transition: 0.3s;
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 8px rgba(0, 242, 255, 0.3);
+}
+
+input::placeholder {
+    color: #8870a6;
+}
+
+/* BOTONES */
+.btn-group {
+    margin-top: 30px;
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+button {
+    padding: 15px 24px;
+    cursor: pointer;
+    border: none;
+    border-radius: 50px; /* Botones redondeados modernos */
+    font-weight: bold;
+    font-size: 1rem;
+    flex: 1;
+    text-transform: uppercase;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+.btn-calc {
+    background-color: transparent;
+    border: 2px solid var(--accent-cyan);
+    color: var(--accent-cyan);
+}
+
+.btn-calc:hover {
+    background-color: rgba(0, 242, 255, 0.1);
+    box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+}
+
+.btn-send {
+    background: var(--btn-gradient);
+    color: white;
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.btn-send.active {
+    opacity: 1;
+    pointer-events: auto;
+    box-shadow: 0 0 20px rgba(160, 68, 255, 0.4);
+}
+
+.btn-send.active:hover {
+    filter: brightness(1.1);
+}
+
+/* RESULTADOS */
+#resultado {
+    margin-top: 25px;
+    padding: 20px;
+    background-color: rgba(0,0,0,0.2);
+    border-left: 4px solid var(--accent-green);
+    border-radius: 4px;
+    display: none;
+}
+
+.precio-final-text {
+    color: var(--accent-green);
+    font-size: 1.4rem;
+    font-weight: bold;
+}
+
+.alerta {
+    color: #ff4444;
+    background-color: rgba(255, 68, 68, 0.1);
+    padding: 10px;
+    border-radius: 4px;
+    margin-top: 10px;
+    border: 1px solid #ff4444;
+}
+
+.hidden { display: none; }
+
+/* FOOTER */
+footer {
+    background-color: #0f0a16; /* Aún más oscuro que el body */
+    padding: 40px 20px;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #8870a6;
+    margin-top: 80px;
+    border-top: 1px solid #333;
+}
+
+hr {
+    border-color: #392853;
+    width: 50%;
+    margin: 20px auto;
+}
