@@ -28,7 +28,9 @@ section {
 /* HERO */
 #home {
     margin-top: 40px;
-    background: linear-gradient(to bottom, var(--brand-purple), var(--bg-body));
+    background-image: url(content/fondo.png);
+    background-position: center;
+    background-size: cover;
     border-radius: 15px;
     border: 1px solid rgba(255,255,255,0.1);
 }
