@@ -20,53 +20,7 @@ body {
     color: var(--text-main);
 }
 
-/* NAV */
-nav {
-    background-color: var(--brand-purple);
-    padding: 1rem;
-    position: fixed;
-    width: 100%;
-    top: 0;
-    border-bottom: 2px solid var(--accent-cyan); /* Borde neón */
-    box-shadow: 0 0 15px rgba(160, 68, 255, 0.4); /* Resplandor morado */
-    z-index: 1000;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
 
-.logo {
-    color: white;
-    font-weight: bold;
-    margin-left: 1rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    text-shadow: 0 0 5px var(--accent-cyan);
-}
-
-nav ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    margin-right: 2rem;
-}
-
-nav ul li {
-    margin-left: 20px;
-}
-
-nav a {
-    color: var(--text-main);
-    text-decoration: none;
-    font-weight: bold;
-    transition: all 0.3s ease;
-}
-
-nav a:hover {
-    color: var(--accent-cyan);
-    text-shadow: 0 0 8px var(--accent-cyan);
-}
 
 /* SECCIONES */
 section {
@@ -289,4 +243,79 @@ div:where(.swal2-icon).swal2-success {
 }
 div:where(.swal2-icon).swal2-success [class^='swal2-success-line'] {
     background-color: var(--accent-green) !important;
+}
+
+/* NAV MEJORADO */
+nav {
+    background-color: var(--brand-purple);
+    padding: 10px 20px; /* Menos relleno vertical, más espacio a los lados */
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    border-bottom: 2px solid var(--accent-cyan);
+    box-shadow: 0 0 15px rgba(160, 68, 255, 0.4);
+    z-index: 1000;
+    
+    /* Flexbox para distribuir espacio */
+    display: flex;
+    justify-content: space-between; /* Logo a la izq, menú a la derecha */
+    align-items: center;
+    box-sizing: border-box; /* Vital para que el padding no rompa el ancho */
+}
+
+.logo {
+    color: white;
+    font-weight: bold;
+    font-size: 1.2rem; /* Ajuste de tamaño */
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-shadow: 0 0 5px var(--accent-cyan);
+    white-space: nowrap; /* Evita que el logo se parta en dos lineas */
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Espacio inteligente entre botones */
+    flex-wrap: wrap; /* Permite que baje si la pantalla es muy chica */
+}
+
+nav ul li {
+    margin: 0; /* Reseteamos márgenes antiguos */
+}
+
+nav a {
+    color: var(--text-main);
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.95rem; /* Un poco más pequeño para que quepa todo */
+    transition: all 0.3s ease;
+    white-space: nowrap; /* Evita que los textos de los botones se partan */
+}
+
+nav a:hover {
+    color: var(--accent-cyan);
+    text-shadow: 0 0 8px var(--accent-cyan);
+}
+
+/* Ajuste especial para pantallas medianas (Tablets/Notebooks pequeños) */
+@media (max-width: 768px) {
+    nav {
+        flex-direction: column; /* Pone el logo arriba y menú abajo */
+        padding: 15px;
+    }
+    
+    nav ul {
+        margin-top: 10px;
+        justify-content: center;
+        width: 100%;
+    }
+    
+    .logo {
+        margin-bottom: 5px;
+    }
 }
