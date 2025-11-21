@@ -1,7 +1,12 @@
+<<<<<<< HEAD
 // 1. IMPORTS
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getDatabase, ref, onValue, set, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+=======
+/* CONFIGURACIÓN INICIAL */
+let presupuestoActual = 5000; 
+>>>>>>> e3382a7bea94f181e9cfb509e0a4e7772fc2bef2
 
 // ==============================================================
 // ⚠️ IMPORTANTE: PEGA AQUÍ TU CONFIGURACIÓN DE FIREBASE QUE YA FUNCIONA
@@ -143,6 +148,7 @@ document.getElementById('btn-login-admin').addEventListener('click', async (e) =
             .catch((error) => {
                 Swal.fire('Error', 'Datos incorrectos: ' + error.code, 'error');
             });
+<<<<<<< HEAD
     }
 });
 
@@ -172,3 +178,7 @@ async function abrirGestorDeSaldo() {
             });
     }
 }
+=======
+        });
+});
+>>>>>>> e3382a7bea94f181e9cfb509e0a4e7772fc2bef2
