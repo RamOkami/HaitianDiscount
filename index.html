@@ -10,7 +10,7 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script type="text/javascript">
        (function(){
-          // REEMPLAZA "TU_PUBLIC_KEY" CON TU PUBLIC KEY DE EMAILJS
+          // Inicializar EmailJS
           emailjs.init("GyDMRqWVvMxC765-L");
        })();
     </script>
@@ -66,13 +66,16 @@
             <label>Usuario de Steam (Opcional)</label>
             <input type="text" name="steam_user" placeholder="Tu ID o URL de perfil">
 
+            <label style="color: #00ff88;">Código de Invitado (Opcional)</label>
+            <input type="text" id="codigoInvitado" name="codigo_invitado" placeholder="Si tienes uno, ponlo aquí">
+
             <input type="hidden" name="precio_final_descuento" id="precioFinalInput">
             <input type="hidden" name="to_name" value="Admin Steam Pyme">
 
             <div id="resultado">
                 <p>Precio Original: <span id="res-original"></span></p>
                 <p class="precio-final-text">
-                    Precio a Pagar (-30%): <span id="res-final"></span>
+                    Precio a Pagar: <span id="res-final"></span>
                 </p>
                 <p id="alerta-presupuesto" class="alerta hidden">
                     ⚠️ El juego excede mi presupuesto actual. No puedo comprarlo.

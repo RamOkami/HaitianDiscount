@@ -1,14 +1,13 @@
-// 1. IMPORTS
+// 1. IMPORTS (Agregamos 'get' y 'child' para buscar códigos)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, onValue, set, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { getDatabase, ref, onValue, set, runTransaction, get, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 // ==============================================================
-// ⚠️ IMPORTANTE: PEGA AQUÍ TU CONFIGURACIÓN DE FIREBASE QUE YA FUNCIONA
-// (La que tiene tu API KEY correcta)
+// TU CONFIGURACIÓN FIREBASE
 // ==============================================================
 const firebaseConfig = {
-    apiKey: "AIzaSyAVQm_MUEWQaf7NXzna2r4Sgbl5SeGNOyM", // <--- NO BORRES LA TUYA
+    apiKey: "AIzaSyAVQm_MUEWQaf7NXzna2r4Sgbl5SeGNOyM",
     authDomain: "haitiandiscount.firebaseapp.com",
     databaseURL: "https://haitiandiscount-default-rtdb.firebaseio.com",
     projectId: "haitiandiscount",
@@ -17,7 +16,6 @@ const firebaseConfig = {
     appId: "1:521054591260:web:a6b847b079d58b9e7942d9",
     measurementId: "G-EMVPQGPWTE"
 };
-// ==============================================================
 
 // Inicializar Apps
 const app = initializeApp(firebaseConfig);
@@ -36,10 +34,10 @@ const inputPrecioFinal = document.getElementById('precioFinalInput');
 const form = document.getElementById('gameForm');
 const btnEnviar = document.getElementById('btnEnviar');
 
-// Formateador
+// Formateador Dinero
 const formatoDinero = (valor) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(valor);
 
-// --- ACTUALIZACIÓN EN TIEMPO REAL ---
+// --- ACTUALIZACIÓN SALDO EN TIEMPO REAL ---
 onValue(saldoRef, (snapshot) => {
     const data = snapshot.val();
     presupuestoActual = data || 0;
@@ -48,33 +46,89 @@ onValue(saldoRef, (snapshot) => {
     setTimeout(() => displayTope.style.color = '#00ff88', 300);
 });
 
-// --- LÓGICA CLIENTE (CALCULAR) ---
+// --- LÓGICA INTELIGENTE DE DESCUENTO CON BASE DE DATOS ---
 window.calcularDescuento = function() {
     const precioInput = document.getElementById('precioSteam').value;
+    // Obtenemos el código escrito y quitamos espacios (trim)
+    const codigoInput = document.getElementById('codigoInvitado').value.trim(); 
+
     if (!precioInput || precioInput <= 0) {
         Swal.fire('¡Atención!', 'Ingresa el precio del juego.', 'warning');
         return;
     }
+
+    // Mostramos "Cargando..." mientras buscamos en la base de datos
+    Swal.fire({
+        title: 'Verificando código...',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+
     const precio = parseFloat(precioInput);
-    const descuento = 0.30; 
-    const precioFinal = Math.round(precio * (1 - descuento));
+    const dbRef = ref(db);
 
-    document.getElementById('resultado').style.display = 'block';
-    document.getElementById('res-original').innerText = formatoDinero(precio);
-    document.getElementById('res-final').innerText = formatoDinero(precioFinal);
-    inputPrecioFinal.value = formatoDinero(precioFinal);
+    // Buscamos en la ruta: codigos_vip / [lo que escribió el usuario]
+    // Si escribió "Mrbilivian2007", busca en codigos_vip/Mrbilivian2007
+    get(child(dbRef, `codigos_vip/${codigoInput}`)).then((snapshot) => {
+        
+        Swal.close(); // Cerramos el cargando
 
-    if (precioFinal > presupuestoActual) {
-        document.getElementById('alerta-presupuesto').style.display = 'block';
-        btnEnviar.classList.remove('active'); 
-        Swal.fire('Sin cupo', `Solo quedan ${formatoDinero(presupuestoActual)}`, 'error');
-    } else {
-        document.getElementById('alerta-presupuesto').style.display = 'none';
-        btnEnviar.classList.add('active');
-    }
+        let descuento = 0.30; // Descuento base (30%) por defecto
+        let esVip = false;
+
+        // ¿Existe ese código en la base de datos?
+        if (snapshot.exists()) {
+            descuento = snapshot.val(); // Toma el valor (ej: 0.35 o 0.45)
+            esVip = true;
+        }
+
+        // Calcular precio final
+        const precioFinal = Math.round(precio * (1 - descuento));
+
+        // Mostrar resultados
+        document.getElementById('resultado').style.display = 'block';
+        document.getElementById('res-original').innerText = formatoDinero(precio);
+        document.getElementById('res-final').innerText = formatoDinero(precioFinal);
+        inputPrecioFinal.value = formatoDinero(precioFinal);
+
+        // Feedback Visual
+        if (esVip) {
+            const porcentaje = Math.round(descuento * 100); // Convierte 0.35 a 35
+            
+            Swal.fire({
+                icon: 'success',
+                title: '¡Código Amigo Encontrado!',
+                text: `Se ha aplicado un ${porcentaje}% de descuento.`,
+                timer: 2000,
+                showConfirmButton: false
+            });
+            document.getElementById('res-final').style.color = '#ffd700'; // Dorado
+        } else {
+            // Si escribió algo pero no era válido, o no escribió nada
+            if(codigoInput !== "" && !esVip) {
+                 Swal.fire('Código no válido', 'Se aplicará el descuento normal del 30%', 'info');
+            }
+            document.getElementById('res-final').style.color = '#00ff88'; // Verde normal
+        }
+
+        // Validar si me alcanza el dinero
+        if (precioFinal > presupuestoActual) {
+            document.getElementById('alerta-presupuesto').style.display = 'block';
+            btnEnviar.classList.remove('active'); 
+            Swal.fire('Sin cupo', `Solo quedan ${formatoDinero(presupuestoActual)}`, 'error');
+        } else {
+            document.getElementById('alerta-presupuesto').style.display = 'none';
+            btnEnviar.classList.add('active');
+        }
+
+    }).catch((error) => {
+        console.error(error);
+        Swal.close();
+        Swal.fire('Error', 'Error de conexión al verificar el código.', 'error');
+    });
 }
 
-// --- LÓGICA CLIENTE (ENVIAR PEDIDO) ---
+// --- ENVIAR PEDIDO ---
 form.addEventListener('submit', function(event) {
     event.preventDefault(); 
     if (!btnEnviar.classList.contains('active')) return;
@@ -104,14 +158,9 @@ form.addEventListener('submit', function(event) {
     });
 });
 
-// ==============================================================
-// NUEVA LÓGICA DE ADMIN (TODO CON VENTANAS)
-// ==============================================================
-
+// --- ADMIN (MODALES) ---
 document.getElementById('btn-login-admin').addEventListener('click', async (e) => {
-    e.preventDefault(); // Evita que el link recargue la página
-
-    // 1. VENTANA DE LOGIN
+    e.preventDefault(); 
     const { value: formValues } = await Swal.fire({
         title: 'Acceso Administrador',
         html:
@@ -131,13 +180,10 @@ document.getElementById('btn-login-admin').addEventListener('click', async (e) =
 
     if (formValues) {
         const [email, password] = formValues;
-
-        // Mostramos "Cargando..."
         Swal.fire({ title: 'Verificando...', didOpen: () => Swal.showLoading() });
 
         signInWithEmailAndPassword(auth, email, password)
             .then(() => {
-                // 2. LOGIN EXITOSO -> ABRIR VENTANA DE SALDO
                 abrirGestorDeSaldo();
             })
             .catch((error) => {
@@ -146,14 +192,13 @@ document.getElementById('btn-login-admin').addEventListener('click', async (e) =
     }
 });
 
-// Función separada para gestionar el saldo una vez logueado
 async function abrirGestorDeSaldo() {
     const { value: nuevoMonto } = await Swal.fire({
         title: 'Gestión de Caja',
         html: `Saldo actual disponible: <br> <h2 style="color:#00ff88">${formatoDinero(presupuestoActual)}</h2>`,
         input: 'number',
         inputLabel: 'Ingresa el nuevo monto tope:',
-        inputValue: presupuestoActual, // Pone el valor actual por defecto
+        inputValue: presupuestoActual,
         showCancelButton: true,
         confirmButtonText: 'Actualizar Saldo'
     });
@@ -161,11 +206,7 @@ async function abrirGestorDeSaldo() {
     if (nuevoMonto) {
         set(saldoRef, parseInt(nuevoMonto))
             .then(() => {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Actualizado',
-                    text: `Nuevo saldo: ${formatoDinero(nuevoMonto)}`
-                });
+                Swal.fire({ icon: 'success', title: 'Actualizado', text: `Nuevo saldo: ${formatoDinero(nuevoMonto)}` });
             })
             .catch((error) => {
                 Swal.fire('Error', 'No tienes permisos o falló la conexión', 'error');

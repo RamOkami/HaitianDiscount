@@ -1,14 +1,11 @@
-/* VARIABLES DE COLOR - TEMA "DARK PURPLE GAMING" */
+/* VARIABLES DE COLOR */
 :root {
-    /* Tu color base solicitado */
     --brand-purple: #392853;
-    
-    /* Colores derivados */
-    --bg-body: #1a1225;        /* Morado casi negro para el fondo */
-    --bg-input: #251a36;       /* Morado oscuro para inputs */
-    --text-main: #e2d9f3;      /* Lavanda claro para leer bien */
-    --accent-cyan: #ff0080;    /* Cyan neón para bordes/hover */
-    --accent-green: #00ff88;   /* Verde neón para dinero/éxito */
+    --bg-body: #1a1225;        
+    --bg-input: #251a36;       
+    --text-main: #e2d9f3;      
+    --accent-cyan: #ff0080;    
+    --accent-green: #00ff88;   
     --btn-gradient: linear-gradient(135deg, #6a3093, #a044ff);
 }
 
@@ -20,37 +17,24 @@ body {
     color: var(--text-main);
 }
 
-
-
 /* SECCIONES */
 section {
-    padding: 100px 20px 60px; /* Un poco más de padding arriba por el nav fijo */
+    padding: 100px 20px 60px;
     max-width: 800px;
     margin: 0 auto;
     text-align: center;
 }
 
-/* HERO / HOME */
+/* HERO */
 #home {
     margin-top: 40px;
-    /* Degradado suave usando tu color */
     background: linear-gradient(to bottom, var(--brand-purple), var(--bg-body));
     border-radius: 15px;
     border: 1px solid rgba(255,255,255,0.1);
 }
 
-h1 { 
-    color: white; 
-    font-size: 2.5rem;
-    margin-bottom: 10px;
-}
-
-h2 { 
-    color: var(--accent-cyan); 
-    border-bottom: 2px solid var(--brand-purple);
-    display: inline-block;
-    padding-bottom: 10px;
-}
+h1 { color: white; font-size: 2.5rem; margin-bottom: 10px; }
+h2 { color: var(--accent-cyan); border-bottom: 2px solid var(--brand-purple); display: inline-block; padding-bottom: 10px; }
 
 /* PRESUPUESTO */
 .budget-box {
@@ -78,7 +62,7 @@ form {
     padding: 40px;
     border-radius: 15px;
     text-align: left;
-    box-shadow: 0 0 30px rgba(0,0,0,0.5); /* Sombra fuerte */
+    box-shadow: 0 0 30px rgba(0,0,0,0.5);
     border: 1px solid #58407b;
 }
 
@@ -104,67 +88,31 @@ input {
     transition: 0.3s;
 }
 
-input:focus {
-    outline: none;
-    border-color: var(--accent-cyan);
-    box-shadow: 0 0 8px rgba(0, 242, 255, 0.3);
-}
-
-input::placeholder {
-    color: #8870a6;
-}
+input:focus { outline: none; border-color: var(--accent-cyan); box-shadow: 0 0 8px rgba(0, 242, 255, 0.3); }
+input::placeholder { color: #8870a6; }
 
 /* BOTONES */
-.btn-group {
-    margin-top: 30px;
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-}
+.btn-group { margin-top: 30px; display: flex; gap: 15px; flex-wrap: wrap; }
 
 button {
     padding: 15px 24px;
     cursor: pointer;
     border: none;
-    border-radius: 50px; /* Botones redondeados modernos */
+    border-radius: 50px;
     font-weight: bold;
     font-size: 1rem;
     flex: 1;
     text-transform: uppercase;
     transition: transform 0.2s, box-shadow 0.2s;
 }
+button:active { transform: scale(0.98); }
 
-button:active {
-    transform: scale(0.98);
-}
+.btn-calc { background-color: transparent; border: 2px solid var(--accent-cyan); color: var(--accent-cyan); }
+.btn-calc:hover { background-color: rgba(0, 242, 255, 0.1); box-shadow: 0 0 15px rgba(0, 242, 255, 0.2); }
 
-.btn-calc {
-    background-color: transparent;
-    border: 2px solid var(--accent-cyan);
-    color: var(--accent-cyan);
-}
-
-.btn-calc:hover {
-    background-color: rgba(0, 242, 255, 0.1);
-    box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
-}
-
-.btn-send {
-    background: var(--btn-gradient);
-    color: white;
-    opacity: 0.5;
-    pointer-events: none;
-}
-
-.btn-send.active {
-    opacity: 1;
-    pointer-events: auto;
-    box-shadow: 0 0 20px rgba(160, 68, 255, 0.4);
-}
-
-.btn-send.active:hover {
-    filter: brightness(1.1);
-}
+.btn-send { background: var(--btn-gradient); color: white; opacity: 0.5; pointer-events: none; }
+.btn-send.active { opacity: 1; pointer-events: auto; box-shadow: 0 0 20px rgba(160, 68, 255, 0.4); }
+.btn-send.active:hover { filter: brightness(1.1); }
 
 /* RESULTADOS */
 #resultado {
@@ -176,26 +124,13 @@ button:active {
     display: none;
 }
 
-.precio-final-text {
-    color: var(--accent-green);
-    font-size: 1.4rem;
-    font-weight: bold;
-}
-
-.alerta {
-    color: #ff4444;
-    background-color: rgba(255, 68, 68, 0.1);
-    padding: 10px;
-    border-radius: 4px;
-    margin-top: 10px;
-    border: 1px solid #ff4444;
-}
-
+.precio-final-text { color: var(--accent-green); font-size: 1.4rem; font-weight: bold; }
+.alerta { color: #ff4444; background-color: rgba(255, 68, 68, 0.1); padding: 10px; border-radius: 4px; margin-top: 10px; border: 1px solid #ff4444; }
 .hidden { display: none; }
 
 /* FOOTER */
 footer {
-    background-color: #0f0a16; /* Aún más oscuro que el body */
+    background-color: #0f0a16;
     padding: 40px 20px;
     text-align: center;
     font-size: 0.9rem;
@@ -203,52 +138,26 @@ footer {
     margin-top: 80px;
     border-top: 1px solid #333;
 }
+hr { border-color: #392853; width: 50%; margin: 20px auto; }
 
-hr {
-    border-color: #392853;
-    width: 50%;
-    margin: 20px auto;
-}
-
-/* === PERSONALIZACIÓN DE ALERTAS (SweetAlert2) === */
-
-/* Fondo del popup */
+/* SWEETALERT */
 div:where(.swal2-container) div:where(.swal2-popup) {
-    background-color: var(--bg-body) !important; /* Tu fondo oscuro */
+    background-color: var(--bg-body) !important; 
     border: 1px solid var(--brand-purple);
     box-shadow: 0 0 20px rgba(160, 68, 255, 0.2);
 }
-
-/* Título */
-div:where(.swal2-container) h2:where(.swal2-title) {
-    color: var(--accent-cyan) !important;
-    text-shadow: 0 0 5px rgba(0, 242, 255, 0.3);
-}
-
-/* Texto */
-div:where(.swal2-container) div:where(.swal2-html-container) {
-    color: var(--text-main) !important;
-}
-
-/* Botón de confirmar */
+div:where(.swal2-container) h2:where(.swal2-title) { color: var(--accent-cyan) !important; text-shadow: 0 0 5px rgba(0, 242, 255, 0.3); }
+div:where(.swal2-container) div:where(.swal2-html-container) { color: var(--text-main) !important; }
 div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm {
     background: var(--btn-gradient) !important;
     box-shadow: 0 0 10px rgba(160, 68, 255, 0.4);
 }
+div:where(.swal2-icon).swal2-success { border-color: var(--accent-green) !important; color: var(--accent-green) !important; }
 
-/* Icono de éxito (Green) */
-div:where(.swal2-icon).swal2-success {
-    border-color: var(--accent-green) !important;
-    color: var(--accent-green) !important;
-}
-div:where(.swal2-icon).swal2-success [class^='swal2-success-line'] {
-    background-color: var(--accent-green) !important;
-}
-
-/* NAV MEJORADO */
+/* NAV */
 nav {
     background-color: var(--brand-purple);
-    padding: 10px 20px; /* Menos relleno vertical, más espacio a los lados */
+    padding: 10px 20px; 
     position: fixed;
     width: 100%;
     top: 0;
@@ -256,22 +165,20 @@ nav {
     border-bottom: 2px solid var(--accent-cyan);
     box-shadow: 0 0 15px rgba(160, 68, 255, 0.4);
     z-index: 1000;
-    
-    /* Flexbox para distribuir espacio */
     display: flex;
-    justify-content: space-between; /* Logo a la izq, menú a la derecha */
+    justify-content: space-between;
     align-items: center;
-    box-sizing: border-box; /* Vital para que el padding no rompa el ancho */
+    box-sizing: border-box;
 }
 
 .logo {
     color: white;
     font-weight: bold;
-    font-size: 1.2rem; /* Ajuste de tamaño */
+    font-size: 1.2rem;
     text-transform: uppercase;
     letter-spacing: 1px;
     text-shadow: 0 0 5px var(--accent-cyan);
-    white-space: nowrap; /* Evita que el logo se parta en dos lineas */
+    white-space: nowrap;
 }
 
 nav ul {
@@ -280,42 +187,22 @@ nav ul {
     margin: 0;
     display: flex;
     align-items: center;
-    gap: 15px; /* Espacio inteligente entre botones */
-    flex-wrap: wrap; /* Permite que baje si la pantalla es muy chica */
-}
-
-nav ul li {
-    margin: 0; /* Reseteamos márgenes antiguos */
+    gap: 15px;
+    flex-wrap: wrap;
 }
 
 nav a {
     color: var(--text-main);
     text-decoration: none;
     font-weight: bold;
-    font-size: 0.95rem; /* Un poco más pequeño para que quepa todo */
+    font-size: 0.95rem;
     transition: all 0.3s ease;
-    white-space: nowrap; /* Evita que los textos de los botones se partan */
+    white-space: nowrap;
 }
+nav a:hover { color: var(--accent-cyan); text-shadow: 0 0 8px var(--accent-cyan); }
 
-nav a:hover {
-    color: var(--accent-cyan);
-    text-shadow: 0 0 8px var(--accent-cyan);
-}
-
-/* Ajuste especial para pantallas medianas (Tablets/Notebooks pequeños) */
 @media (max-width: 768px) {
-    nav {
-        flex-direction: column; /* Pone el logo arriba y menú abajo */
-        padding: 15px;
-    }
-    
-    nav ul {
-        margin-top: 10px;
-        justify-content: center;
-        width: 100%;
-    }
-    
-    .logo {
-        margin-bottom: 5px;
-    }
+    nav { flex-direction: column; padding: 15px; }
+    nav ul { margin-top: 10px; justify-content: center; width: 100%; }
+    .logo { margin-bottom: 5px; }
 }
