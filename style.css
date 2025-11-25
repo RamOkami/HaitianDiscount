@@ -15,21 +15,21 @@
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
     --radius: 12px;
-    --nav-bg: rgba(255, 255, 255, 0.9); /* Nueva variable para navbar */
+    --nav-bg: rgba(255, 255, 255, 0.9);
 }
 
 /* --- MODO OSCURO --- */
 body.dark-mode {
-    --primary: #f1f5f9;       /* Texto principal claro */
-    --accent: #3b82f6;        /* Azul un poco más brillante para fondo oscuro */
+    --primary: #f1f5f9;       
+    --accent: #3b82f6;        
     --accent-hover: #60a5fa;
-    --bg-body: #0f172a;       /* Fondo muy oscuro (Slate 900) */
-    --bg-card: #1e293b;       /* Tarjetas oscuras (Slate 800) */
-    --text-main: #cbd5e1;     /* Texto secundario claro */
-    --text-light: #94a3b8;    /* Texto terciario */
-    --border: #334155;        /* Bordes oscuros */
-    --vip-gold: #fbbf24;      /* Dorado más brillante */
-    --nav-bg: rgba(15, 23, 42, 0.9); /* Navbar oscuro */
+    --bg-body: #0f172a;       
+    --bg-card: #1e293b;       
+    --text-main: #cbd5e1;     
+    --text-light: #94a3b8;    
+    --border: #334155;        
+    --vip-gold: #fbbf24;      
+    --nav-bg: rgba(15, 23, 42, 0.9);
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.5);
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5);
 }
@@ -42,7 +42,7 @@ body {
     color: var(--text-main);
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
-    transition: background-color 0.3s, color 0.3s; /* Transición suave */
+    transition: background-color 0.3s, color 0.3s;
 }
 
 /* UTILS */
@@ -93,7 +93,61 @@ body {
 .hero .highlight { color: var(--accent); }
 .hero .subtitle { color: var(--text-light); max-width: 500px; margin: 0 auto; font-size: 1.1rem; }
 
-/* 4. BUDGET SECTION */
+/* 4. SECCIÓN CÓMO FUNCIONA (Actualizado con Tarjetas) */
+.how-it-works {
+    padding: 60px 0;
+    background: var(--bg-body);
+}
+
+.section-title {
+    text-align: center;
+    font-size: 1.8rem;
+    color: var(--primary);
+    margin-bottom: 40px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+.steps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+    gap: 30px;
+    text-align: center;
+}
+
+.step-card {
+    background: var(--bg-card);
+    padding: 30px 20px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s;
+    height: 100%; 
+}
+
+.step-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--accent);
+}
+
+.step-icon {
+    width: 70px; 
+    height: 70px; 
+    background: rgba(37, 99, 235, 0.08);
+    color: var(--accent); 
+    border-radius: 50%; 
+    margin: 0 auto 20px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+}
+
+.step-icon svg { width: 32px; height: 32px; }
+.step-card h3 { font-size: 1.2rem; margin-bottom: 10px; color: var(--primary); font-weight: 700; }
+.step-card p { font-size: 0.95rem; color: var(--text-light); line-height: 1.6; }
+
+/* 5. BUDGET SECTION */
 .section-budget { margin-bottom: 40px; }
 .budget-card {
     background: var(--bg-card);
@@ -112,7 +166,7 @@ body {
 .budget-info h2 { font-size: 2.5rem; font-weight: 700; color: var(--primary); margin: 5px 0; letter-spacing: -1px; }
 .budget-desc p { font-size: 0.9rem; color: var(--text-light); max-width: 600px; }
 
-/* 5. FORMULARIO */
+/* 6. FORMULARIO */
 .form-wrapper {
     background: var(--bg-card);
     border: 1px solid var(--border);
@@ -122,7 +176,7 @@ body {
     transition: background 0.3s, border-color 0.3s;
 }
 .form-header { 
-    background: rgba(0,0,0,0.03); /* Transparencia para que sirva en dark y light */
+    background: rgba(0,0,0,0.03);
     padding: 25px 30px; 
     border-bottom: 1px solid var(--border); 
 }
@@ -139,9 +193,9 @@ input {
     font-size: 0.95rem;
     border: 1px solid var(--border);
     border-radius: 6px;
-    color: var(--primary); /* Texto del input adaptativo */
+    color: var(--primary);
     transition: border-color 0.2s, box-shadow 0.2s, background-color 0.3s;
-    background: var(--bg-body); /* Fondo del input adaptativo */
+    background: var(--bg-body);
     font-family: 'Inter', sans-serif;
 }
 input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
@@ -153,7 +207,7 @@ input::placeholder { color: var(--text-light); opacity: 0.5; }
 .result-container {
     display: none; 
     margin-top: 10px;
-    background: rgba(0,0,0,0.03); /* Adaptativo */
+    background: rgba(0,0,0,0.03);
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 20px;
@@ -188,7 +242,28 @@ input::placeholder { color: var(--text-light); opacity: 0.5; }
 .vip-active { border-color: var(--vip-gold) !important; color: var(--vip-gold) !important; }
 .text-vip { color: var(--vip-gold) !important; }
 
-/* FOOTER */
+/* 7. FAQ ACCORDION */
+.faq-section { padding: 60px 0; }
+.faq-grid { max-width: 700px; margin: 0 auto; }
+
+.faq-item {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 8px; margin-bottom: 15px; overflow: hidden;
+}
+
+.faq-item summary {
+    padding: 20px; cursor: pointer; font-weight: 600; color: var(--primary);
+    list-style: none; display: flex; justify-content: space-between; align-items: center;
+}
+.faq-item summary::after { content: '+'; font-size: 1.2rem; color: var(--accent); }
+.faq-item[open] summary::after { content: '-'; }
+
+.faq-item p {
+    padding: 0 20px 20px; color: var(--text-light); font-size: 0.95rem; margin: 0;
+    border-top: 1px solid transparent; 
+}
+
+/* 8. FOOTER */
 footer { margin-top: 60px; border-top: 1px solid var(--border); padding: 30px 0; text-align: center; font-size: 0.85rem; color: var(--text-light); }
 
 /* WHATSAPP */
@@ -214,40 +289,12 @@ div:where(.swal2-title) { font-size: 1.4rem !important; color: var(--primary) !i
 div:where(.swal2-html-container) { color: var(--text-light) !important; }
 div:where(.swal2-input) { color: var(--primary) !important; background: var(--bg-body) !important; border-color: var(--border) !important;}
 
-/* --- RESPONSIVE MOBILE (Mejoras para Celular) --- */
+/* RESPONSIVE MOBILE */
 @media (max-width: 768px) {
-    
-    /* 1. Ajustar el contenedor del menú */
-    .nav-container {
-        flex-direction: column; /* Pone el logo arriba y los links abajo */
-        gap: 15px;              /* Espacio entre el logo y los links */
-    }
-
-    /* 2. Ajustar los enlaces */
-    .nav-links {
-        width: 100%;
-        justify-content: center; /* Centra los enlaces */
-        gap: 20px;               /* Espacio cómodo entre palabras */
-        padding-bottom: 5px;
-    }
-
-    /* 3. Reducir un poco el tamaño de la letra de los enlaces para que quepan bien */
-    .nav-links a {
-        font-size: 0.85rem; 
-    }
-
-    /* 4. Ajustar el título principal (Hero) para que respire */
-    .hero {
-        padding-top: 40px;    /* Ajuste visual */
-        padding-bottom: 30px;
-    }
-
-    .hero h1 {
-        font-size: 2rem;      /* Título un poco más chico en celular para que no ocupe toda la pantalla */
-    }
-
-    /* 5. Ajustar el contenedor general para que tenga margen a los lados */
-    .container {
-        padding: 0 25px;      /* Más margen a los costados para que no se pegue al borde del celular */
-    }
+    .nav-container { flex-direction: column; gap: 15px; }
+    .nav-links { width: 100%; justify-content: center; gap: 20px; padding-bottom: 5px; }
+    .nav-links a { font-size: 0.85rem; }
+    .hero { padding-top: 40px; padding-bottom: 30px; }
+    .hero h1 { font-size: 2rem; }
+    .container { padding: 0 25px; }
 }
