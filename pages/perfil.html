@@ -7,11 +7,10 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="../index_style.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/perfil.css">
     
-    <link rel="stylesheet" href="perfil.css">
-    
-    <link rel="shortcut icon" href="../content/logo.png">
+    <link rel="shortcut icon" href="../assets/img/logo.png">
     
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
@@ -54,7 +53,7 @@
                 </div>
                 
                 <div style="display: flex; align-items: center;">
-                    <a href="../admin_content/admin.html" id="adminBtn" class="btn-admin-access hidden" target="_blank">
+                    <a href="admin.html" id="adminBtn" class="btn-admin-access hidden" target="_blank">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path fill-rule="evenodd" d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5z"/></svg>
                         Panel Admin
                     </a>
@@ -66,16 +65,9 @@
             <div class="table-responsive">
                 <table id="historyTable">
                     <thead>
-                        <tr>
-                            <th>Fecha</th>
-                            <th>Juego</th>
-                            <th>Plataforma</th>
-                            <th>Precio</th>
-                            <th>Estado</th>
-                        </tr>
+                        <tr><th>Fecha</th><th>Juego</th><th>Plataforma</th><th>Precio</th><th>Estado</th></tr>
                     </thead>
-                    <tbody id="historyBody">
-                        </tbody>
+                    <tbody id="historyBody"></tbody>
                 </table>
                 <div id="noDataMsg" style="text-align:center; padding: 40px; display:none; color: var(--text-light);">
                     No tienes pedidos registrados con esta cuenta.
@@ -85,6 +77,6 @@
 
     </div>
 
-    <script type="module" src="perfil.js"></script>
+    <script type="module" src="../assets/js/perfil.js"></script>
 </body>
 </html>
