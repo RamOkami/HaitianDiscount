@@ -30,7 +30,7 @@ const inputPrecioFinal = document.getElementById('precioFinalInput');
 const form = document.getElementById('gameForm');
 const btnEnviar = document.getElementById('btnEnviar');
 const btnCalc = document.querySelector('.btn-calc'); 
-const inputComprobante = document.getElementById('comprobanteInput'); // NUEVO
+const inputComprobante = document.getElementById('comprobanteInput');
 
 if(btnCalc) {
     btnCalc.addEventListener('click', calcularDescuento);
@@ -174,7 +174,6 @@ function calcularDescuento() {
 function mostrarResultadosUI(precioOriginal, precioFinal, esVip, descuentoValor = 0.30) {
     const resultadoDiv = document.getElementById('resultado');
     resultadoDiv.style.display = 'block'; 
-    // Ocultar mensaje antiguo de "adjunta comprobante al correo" ya que ahora lo suben
     const msjComprobante = document.getElementById('mensaje-comprobante');
     if(msjComprobante) msjComprobante.style.display = 'none';
 
@@ -203,7 +202,7 @@ function mostrarResultadosUI(precioOriginal, precioFinal, esVip, descuentoValor 
     }
 }
 
-// --- UTILIDAD: COMPRIMIR IMAGEN A BASE64 ---
+// --- UTILIDAD: COMPRIMIR IMAGEN ---
 function comprimirImagen(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -213,15 +212,13 @@ function comprimirImagen(file) {
             img.src = event.target.result;
             img.onload = () => {
                 const canvas = document.createElement('canvas');
-                const maxWidth = 800; // Reducimos tamaño máximo
+                const maxWidth = 800; 
                 const scaleSize = maxWidth / img.width;
                 canvas.width = maxWidth;
                 canvas.height = img.height * scaleSize;
 
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                
-                // Comprimir a JPEG calidad 0.6 para no saturar BD
                 const dataUrl = canvas.toDataURL('image/jpeg', 0.6); 
                 resolve(dataUrl);
             };
@@ -236,7 +233,6 @@ form.addEventListener('submit', async function(event) {
     event.preventDefault(); 
     if (!tiendaAbierta || btnEnviar.disabled) return;
 
-    // VALIDACIÓN DE COMPROBANTE
     if (!inputComprobante.files || inputComprobante.files.length === 0) {
         Swal.fire('Falta el Comprobante', 'Por favor adjunta la captura de la transferencia.', 'warning');
         return;
@@ -247,20 +243,20 @@ form.addEventListener('submit', async function(event) {
     const precioClienteStr = document.getElementById('res-final').innerText;
     const costoCliente = parseInt(precioClienteStr.replace(/\D/g, ''));
 
-    Swal.fire({ title: 'Subiendo comprobante...', text: 'Esto puede tardar unos segundos', didOpen: () => Swal.showLoading() });
+    Swal.fire({ title: 'Procesando...', text: 'Subiendo comprobante...', didOpen: () => Swal.showLoading() });
 
     try {
-        // 1. Comprimir imagen
         const comprobanteBase64 = await comprimirImagen(inputComprobante.files[0]);
 
-        // 2. Transacción
         runTransaction(saldoRef, (saldoActual) => {
             const actual = saldoActual || 0;
             if (actual >= costoSteam) return actual - costoSteam; 
             else return; 
         }).then((result) => {
             if (result.committed) {
-                
+                // --- NUEVO: OBTENER USUARIO ACTUAL ---
+                const user = auth.currentUser; 
+
                 const nuevaOrdenRef = push(ref(db, 'ordenes'));
                 set(nuevaOrdenRef, {
                     fecha: new Date().toISOString(),
@@ -271,7 +267,9 @@ form.addEventListener('submit', async function(event) {
                     precio_steam: costoSteam,
                     estado: 'pendiente',
                     plataforma: 'Steam',
-                    comprobante_img: comprobanteBase64 // GUARDAMOS LA IMAGEN EN LA BD
+                    comprobante_img: comprobanteBase64,
+                    // --- GUARDAR UID PARA HISTORIAL ---
+                    uid: user ? user.uid : null 
                 });
 
                 emailjs.sendForm(SERVICE_ID, TEMPLATE_ID, form).then(() => {
@@ -287,7 +285,7 @@ form.addEventListener('submit', async function(event) {
         });
     } catch (err) {
         console.error(err);
-        Swal.fire('Error', 'Error al procesar la imagen.', 'error');
+        Swal.fire('Error', 'Error al procesar la imagen o el pedido.', 'error');
     }
 });
 

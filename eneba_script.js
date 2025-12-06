@@ -32,7 +32,7 @@ const inputPrecioFinal = document.getElementById('precioFinalInput');
 const form = document.getElementById('gameForm');
 const btnEnviar = document.getElementById('btnEnviar');
 const btnCalc = document.querySelector('.btn-calc'); 
-const inputComprobante = document.getElementById('comprobanteInput'); // NUEVO
+const inputComprobante = document.getElementById('comprobanteInput');
 
 if(btnCalc) {
     btnCalc.addEventListener('click', calcularDescuento);
@@ -184,7 +184,7 @@ form.addEventListener('submit', async function(event) {
     const precioClienteStr = document.getElementById('res-final').innerText;
     const costoCliente = parseInt(precioClienteStr.replace(/\D/g, ''));
 
-    Swal.fire({ title: 'Subiendo comprobante...', text: 'Esto puede tardar unos segundos', didOpen: () => Swal.showLoading() });
+    Swal.fire({ title: 'Procesando...', text: 'Subiendo comprobante...', didOpen: () => Swal.showLoading() });
 
     try {
         const comprobanteBase64 = await comprimirImagen(inputComprobante.files[0]);
@@ -195,7 +195,9 @@ form.addEventListener('submit', async function(event) {
             else return; 
         }).then((result) => {
             if (result.committed) {
-                
+                // --- NUEVO: OBTENER USUARIO ACTUAL ---
+                const user = auth.currentUser; 
+
                 const nuevaOrdenRef = push(ref(db, 'ordenes'));
                 set(nuevaOrdenRef, {
                     fecha: new Date().toISOString(),
@@ -206,7 +208,9 @@ form.addEventListener('submit', async function(event) {
                     precio_steam: costoOriginal, 
                     estado: 'pendiente',
                     plataforma: 'Eneba',
-                    comprobante_img: comprobanteBase64 // IMAGEN GUARDADA
+                    comprobante_img: comprobanteBase64,
+                    // --- GUARDAR UID PARA HISTORIAL ---
+                    uid: user ? user.uid : null 
                 });
 
                 emailjs.sendForm(SERVICE_ID, TEMPLATE_ID, form).then(() => {
@@ -221,7 +225,7 @@ form.addEventListener('submit', async function(event) {
         });
     } catch (err) {
         console.error(err);
-        Swal.fire('Error', 'Error al procesar la imagen.', 'error');
+        Swal.fire('Error', 'Error al procesar la imagen o el pedido.', 'error');
     }
 });
 

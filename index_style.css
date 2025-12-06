@@ -64,9 +64,9 @@ body {
 .nav-container { display: flex; justify-content: space-between; align-items: center; }
 .brand { font-weight: 700; font-size: 1.2rem; color: var(--primary); letter-spacing: -0.5px; }
 .brand .dot { color: var(--accent); }
-.nav-links { list-style: none; display: flex; gap: 25px; align-items: center; }
-.nav-links a { text-decoration: none; color: var(--text-main); font-size: 0.9rem; font-weight: 500; transition: color 0.2s; }
-.nav-links a:hover { color: var(--accent); }
+.nav-links { list-style: none; display: flex; gap: 15px; align-items: center; } /* Reduje un poco el gap para los iconos */
+.nav-links a.text-link { text-decoration: none; color: var(--text-main); font-size: 0.9rem; font-weight: 500; transition: color 0.2s; }
+.nav-links a.text-link:hover { color: var(--accent); }
 .admin-link { color: var(--text-light) !important; font-size: 0.8rem !important; }
 
 /* BOTÓN TOGGLE MODO OSCURO */
@@ -86,6 +86,31 @@ body {
 }
 .theme-btn:hover { background: var(--border); color: var(--primary); }
 .theme-btn svg { width: 18px; height: 18px; fill: currentColor; }
+
+/* --- NUEVO: ESTILO PARA ENLACE CON ICONO (PERFIL) --- */
+.nav-icon-link {
+    background: transparent;
+    border: 1px solid var(--border); /* Mismo borde que el botón de tema */
+    color: var(--text-main);
+    padding: 6px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    width: 36px;
+    height: 36px;
+    text-decoration: none;
+}
+.nav-icon-link:hover {
+    background: var(--border);
+    color: var(--primary);
+}
+.nav-icon-link svg {
+    width: 20px; /* Un poco más grande que el sol/luna para que se vea bien */
+    height: 20px;
+    fill: currentColor;
+}
 
 /* 3. HERO */
 .hero { text-align: center; padding: 80px 0 40px; }
@@ -191,7 +216,7 @@ div:where(.swal2-input) { color: var(--primary) !important; background: var(--bg
 @media (max-width: 768px) {
     .nav-container { flex-direction: column; gap: 15px; }
     .nav-links { width: 100%; justify-content: center; gap: 20px; padding-bottom: 5px; }
-    .nav-links a { font-size: 0.85rem; }
+    .nav-links a.text-link { font-size: 0.85rem; }
     .hero { padding-top: 40px; padding-bottom: 30px; }
     .hero h1 { font-size: 2rem; }
     .container { padding: 0 25px; }

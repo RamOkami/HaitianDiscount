@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil | HaitianDiscount</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="../index_style.css">
+    
+    <link rel="stylesheet" href="perfil.css">
+    
+    <link rel="shortcut icon" href="../content/logo.png">
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="container nav-container">
+            <div class="brand">HaitianDiscount<span class="dot">.</span></div>
+            <ul class="nav-links">
+                <li><a href="../index.html" class="text-link">Steam</a></li>
+                <li><a href="../eneba.html" class="text-link">Eneba</a></li>
+                
+                <li>
+                    <a href="perfil.html" class="nav-icon-link" aria-label="Mi Cuenta" style="background: var(--border); color: var(--primary);">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                    </a>
+                </li>
+
+                <li><button id="theme-toggle" class="theme-btn"></button></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container profile-container">
+        
+        <div id="loginView" class="login-box">
+            <h2>Accede a tu Historial</h2>
+            <p style="color: var(--text-light); margin-bottom: 20px;">Inicia sesión con Google para ver el estado de tus compras.</p>
+            <button id="btnGoogleLogin" class="btn btn-primary" style="max-width: 300px; display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 auto;">
+                <svg width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M21.35 11.1h-9.17v2.73h6.51c-.33 3.81-3.5 5.44-6.5 5.44C8.36 19.27 5 16.25 5 12c0-4.1 3.2-7.27 7.2-7.27 3.09 0 4.9 1.97 4.9 1.97L19 4.72S16.56 2 12.1 2C6.42 2 2.03 6.8 2.03 12c0 5.05 4.13 10 10.22 10 5.35 0 9.25-3.67 9.25-9.09 0-1.15-.15-1.81-.15-1.81z"/></svg>
+                Iniciar con Google
+            </button>
+        </div>
+
+        <div id="userView" class="hidden">
+            <div class="user-header">
+                <div style="flex:1;">
+                    <h3 id="userName">Hola, Usuario</h3>
+                    <p style="font-size: 0.9rem; color: var(--text-light);" id="userEmail">Cargando...</p>
+                </div>
+                
+                <div style="display: flex; align-items: center;">
+                    <a href="../admin_content/admin.html" id="adminBtn" class="btn-admin-access hidden" target="_blank">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path fill-rule="evenodd" d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5z"/></svg>
+                        Panel Admin
+                    </a>
+
+                    <button id="btnLogout" class="btn btn-secondary btn-sm" style="width: auto;">Cerrar Sesión</button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table id="historyTable">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Juego</th>
+                            <th>Plataforma</th>
+                            <th>Precio</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyBody">
+                        </tbody>
+                </table>
+                <div id="noDataMsg" style="text-align:center; padding: 40px; display:none; color: var(--text-light);">
+                    No tienes pedidos registrados con esta cuenta.
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script type="module" src="perfil.js"></script>
+</body>
+</html>

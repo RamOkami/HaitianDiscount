@@ -1,0 +1,95 @@
+/* ESTILOS DE LA PÁGINA DE PERFIL */
+
+.profile-container { 
+    max-width: 900px; 
+    margin: 40px auto; 
+    padding: 20px; 
+}
+
+.login-box { 
+    text-align: center; 
+    padding: 60px 20px; 
+    background: var(--bg-card); 
+    border-radius: var(--radius); 
+    border: 1px solid var(--border); 
+    box-shadow: var(--shadow-sm); 
+}
+
+.user-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 30px; 
+    background: var(--bg-card); 
+    padding: 20px; 
+    border-radius: var(--radius); 
+    border: 1px solid var(--border); 
+    flex-wrap: wrap; 
+    gap: 20px; 
+}
+
+.table-responsive { 
+    overflow-x: auto; 
+    background: var(--bg-card); 
+    border-radius: var(--radius); 
+    border: 1px solid var(--border); 
+}
+
+table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    min-width: 600px; 
+}
+
+th { 
+    text-align: left; 
+    padding: 15px; 
+    background: rgba(0,0,0,0.02); 
+    color: var(--primary); 
+    font-size: 0.85rem; 
+    border-bottom: 2px solid var(--border); 
+}
+
+td { 
+    padding: 15px; 
+    border-bottom: 1px solid var(--border); 
+    font-size: 0.9rem; 
+    color: var(--text-main); 
+}
+
+/* Badges de Estado */
+.status-badge { 
+    padding: 4px 10px; 
+    border-radius: 20px; 
+    font-size: 0.75rem; 
+    font-weight: 700; 
+    text-transform: uppercase; 
+}
+.st-pendiente { background: #fef3c7; color: #d97706; }
+.st-completado { background: #dcfce7; color: #166534; }
+.st-cancelado { background: #fee2e2; color: #991b1b; }
+
+/* Plataformas */
+.platform-steam { color: #2563eb; font-weight: bold; }
+.platform-eneba { color: #a855f7; font-weight: bold; }
+
+/* CLASE OCULTA (Corrección: !important para forzar ocultamiento) */
+.hidden { 
+    display: none !important; 
+}
+
+/* Botón Admin Exclusivo */
+.btn-admin-access {
+    background-color: var(--primary);
+    color: var(--bg-body);
+    padding: 10px 20px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--border);
+    margin-right: 15px;
+}
+.btn-admin-access:hover { opacity: 0.9; }

@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getDatabase, ref, onValue, set, update, remove, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+// IMPORTANTE: Agregamos GoogleAuthProvider y signInWithPopup
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAVQm_MUEWQaf7NXzna2r4Sgbl5SeGNOyM",
@@ -16,30 +17,77 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
+const provider = new GoogleAuthProvider(); // Proveedor de Google
+
+// *** LISTA DE ADMINISTRADORES ***
+const ADMIN_UIDS = [
+    'y7wKykEchQON3tS22mRhJURsHOv1',  // Tomas
+    'DEKH3yxMy6hCTkdbvwZl4dkFlnc2'   // Franchute
+];
 
 // DOM Elements
 const loginOverlay = document.getElementById('login-overlay');
 const adminContent = document.getElementById('adminContent');
 const vipList = document.getElementById('vipList');
 const ordersList = document.getElementById('ordersList');
+const loaderView = document.getElementById('loaderView');
+const loginCard = document.getElementById('loginCard');
 
-// 1. AUTH
+// 1. AUTH CON CONTROL DE CARGA
 onAuthStateChanged(auth, (user) => {
     if (user) {
-        loginOverlay.style.display = 'none';
-        adminContent.style.display = 'block';
-        iniciarListeners(); 
+        if (ADMIN_UIDS.includes(user.uid)) {
+            // Es admin
+            loginOverlay.style.display = 'none';
+            adminContent.style.display = 'block';
+            iniciarListeners(); 
+        } else {
+            // No es admin
+            Swal.fire({
+                icon: 'error',
+                title: 'Acceso Denegado',
+                text: 'No tienes permisos de administrador.',
+                allowOutsideClick: false
+            }).then(() => {
+                window.location.href = "../index.html"; 
+            });
+        }
     } else {
+        // No hay usuario
         loginOverlay.style.display = 'flex';
         adminContent.style.display = 'none';
+        loaderView.style.display = 'none'; 
+        loginCard.style.display = 'block'; 
     }
 });
 
+// --- LOGIN CON GOOGLE (NUEVO) ---
+document.getElementById('btnGoogleAdmin').addEventListener('click', () => {
+    loginCard.style.display = 'none';
+    loaderView.style.display = 'block';
+    
+    signInWithPopup(auth, provider).catch((error) => {
+        loaderView.style.display = 'none';
+        loginCard.style.display = 'block';
+        Swal.fire('Error', error.message, 'error');
+    });
+});
+
+// LOGIN CON CORREO (RESPALDO)
 document.getElementById('loginForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const email = document.getElementById('email').value;
     const pass = document.getElementById('password').value;
-    signInWithEmailAndPassword(auth, email, pass).catch(err => Swal.fire('Error', 'Credenciales incorrectas', 'error'));
+    
+    loginCard.style.display = 'none';
+    loaderView.style.display = 'block';
+
+    signInWithEmailAndPassword(auth, email, pass)
+        .catch(err => {
+            loaderView.style.display = 'none';
+            loginCard.style.display = 'block';
+            Swal.fire('Error', 'Credenciales incorrectas', 'error');
+        });
 });
 
 document.getElementById('btnLogout').addEventListener('click', () => {
@@ -160,6 +208,8 @@ function iniciarListeners() {
                 return new Date(b[1].fecha) - new Date(a[1].fecha);
             });
 
+            window.imagenesComprobantes = {};
+
             listaOrdenada.forEach(([id, orden]) => {
                 const fecha = new Date(orden.fecha).toLocaleString('es-CL');
                 const monto = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(orden.precio_pagado);
@@ -168,15 +218,9 @@ function iniciarListeners() {
                 const plat = orden.plataforma || 'Steam';
                 const platStyle = plat === 'Eneba' ? 'color: #a855f7; font-weight: bold; font-size: 0.8rem;' : 'color: #2563eb; font-weight: bold; font-size: 0.8rem;';
                 
-                // Botón Comprobante
                 let btnComprobante = '<span style="color:#ccc; font-size:0.8rem;">Sin foto</span>';
                 if(orden.comprobante_img) {
-                    // Usamos un botón que llama a verComprobante pasando el ID para buscar la data o pasar la string directamente (cuidado con strings largas en HTML inline, mejor usar función)
-                    // Para evitar problemas de caracteres en el HTML, guardamos la data en un objeto global temporal o accedemos a la DB.
-                    // Truco simple: Asignar el base64 a una variable global indexada por ID
-                    if(!window.imagenesComprobantes) window.imagenesComprobantes = {};
                     window.imagenesComprobantes[id] = orden.comprobante_img;
-                    
                     btnComprobante = `<button class="btn btn-sm" style="background:#64748b; color:white;" onclick="verComprobante('${id}')">📷 Ver</button>`;
                 }
 
