@@ -7,6 +7,40 @@ import { db, auth, initTheme, initImageZoom, comprimirImagen, configurarValidaci
 initTheme();
 initImageZoom();
 
+/* --- FUNCIÓN AUXILIAR: CONFETI --- */
+function lanzarConfeti() {
+    // Verificamos si la librería cargó correctamente
+    if (!window.confetti) return;
+
+    // Duración de la animación: 2 segundos
+    var end = Date.now() + (2 * 1000);
+
+    // Colores: Azul (Steam), Morado (Eneba), Blanco
+    var colors = ['#2563eb', '#a855f7', '#ffffff'];
+
+    (function frame() {
+        confetti({
+            particleCount: 3,
+            angle: 60,
+            spread: 55,
+            origin: { x: 0 }, // Desde la izquierda
+            colors: colors
+        });
+        confetti({
+            particleCount: 3,
+            angle: 120,
+            spread: 55,
+            origin: { x: 1 }, // Desde la derecha
+            colors: colors
+        });
+
+        if (Date.now() < end) {
+            requestAnimationFrame(frame);
+        }
+    }());
+}
+
+/* --- LÓGICA PRINCIPAL DE LA TIENDA --- */
 export function initStorePage(config) {
     const { 
         platformName,       // "Steam" o "Eneba"
@@ -253,7 +287,19 @@ export function initStorePage(config) {
                         // 4. EMAIL
                         updateStatus('4/4 Enviando confirmación...');
                         emailjs.sendForm(SERVICE_ID, TEMPLATE_ID, form).then(() => {
-                            Swal.fire('¡Pedido Recibido!', 'Hemos recibido tu comprobante y pedido.', 'success');
+                            
+                            // === ÉXITO: DISPARAR CONFETI Y ALERTA ===
+                            lanzarConfeti();
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Pedido Recibido!',
+                                text: 'Hemos recibido tu comprobante y pedido. Te contactaremos pronto.',
+                                confirmButtonText: 'Entendido',
+                                confirmButtonColor: platformName === 'Steam' ? '#2563eb' : '#a855f7'
+                            });
+
+                            // LIMPIEZA
                             form.reset();
                             rutEsValido = false; 
                             if(inputRut) {
