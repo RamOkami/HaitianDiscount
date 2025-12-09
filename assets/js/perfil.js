@@ -29,7 +29,7 @@ if (profileRut) {
     });
 }
 
-// ADMINS (NOTA: Esto es solo visual, la seguridad real está en las Reglas de Firebase)
+// ADMINS
 const ADMIN_UIDS = [
     'y7wKykEchQON3tS22mRhJURsHOv1', 
     'DEKH3yxMy6hCTkdbvwZl4dkFlnc2' 
@@ -79,7 +79,6 @@ function cargarDatosUsuario(uid) {
             
             if(profileRut) {
                 profileRut.value = data.rut || '';
-                // Si hay RUT guardado, disparamos validación visual
                 if(profileRut.value) profileRut.dispatchEvent(new Event('input'));
             }
             
@@ -93,7 +92,6 @@ function guardarDatosUsuario(uid) {
     const rut = profileRut.value.trim();
     const steam = profileSteam.value.trim();
 
-    // VALIDACIÓN ANTES DE GUARDAR
     if (rut.length > 0 && !rutEsValido) {
         Swal.fire('Error', 'El RUT ingresado no es válido.', 'error');
         profileRut.focus();
@@ -112,7 +110,7 @@ function guardarDatosUsuario(uid) {
     });
 }
 
-// 4. HISTORIAL
+// 4. HISTORIAL (CON IMAGEN CENTRADA)
 function cargarHistorial(uid) {
     const ordenesRef = query(ref(db, 'ordenes'), orderByChild('uid'), equalTo(uid));
     
@@ -135,10 +133,17 @@ function cargarHistorial(uid) {
             const plat = orden.plataforma || 'Steam';
             const platClass = plat === 'Eneba' ? 'platform-eneba' : 'platform-steam';
 
+            // LÓGICA DE IMAGEN
+            let imgHtml = '<span style="font-size:0.8rem; color:#ccc;">Sin Img</span>';
+            if(orden.imagen_juego) {
+                imgHtml = `<img src="${orden.imagen_juego}" class="game-thumb-profile" alt="Juego">`;
+            }
+
+            // --- AQUÍ ESTÁ EL CAMBIO: text-align: center ---
             const row = `
                 <tr>
                     <td>${fecha}</td>
-                    <td style="font-weight:600;">${orden.juego}</td>
+                    <td style="padding: 5px; text-align: center;">${imgHtml}</td> <td style="font-weight:600;">${orden.juego}</td>
                     <td class="${platClass}">${plat.toUpperCase()}</td>
                     <td>${monto}</td>
                     <td><span class="status-badge st-${estado}">${estado.toUpperCase()}</span></td>

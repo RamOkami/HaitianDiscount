@@ -2,6 +2,7 @@ import { ref, onValue, runTransaction, get, child, push, set } from "https://www
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 // IMPORTAMOS TODO DESDE CONFIG (INCLUYENDO FUNCIONES NUEVAS)
 import { db, auth, initTheme, initImageZoom, comprimirImagen, configurarValidacionRut } from './config.js';
+
 // Iniciar Tema y Zoom
 initTheme();
 initImageZoom();
@@ -56,6 +57,7 @@ onValue(estadoRef, (snapshot) => {
     }
 });
 
+// LOGICA BUSCADOR STEAM
 const btnBuscarSteam = document.getElementById('btnBuscarSteam');
 const inputUrlSteam = document.getElementById('steamUrlInput');
 const previewContainer = document.getElementById('previewContainer');
@@ -223,6 +225,7 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
+// --- EVENTO SUBMIT (Con guardado de imagen y feedback) ---
 form.addEventListener('submit', async function(event) {
     event.preventDefault(); 
     if (!tiendaAbierta || btnEnviar.disabled) return;
@@ -238,20 +241,21 @@ form.addEventListener('submit', async function(event) {
         return;
     }
 
+    // --- SEGURIDAD: VERIFICACIÓN FINAL DE MONTOS ---
     const precioSteamStr = document.getElementById('res-original').innerText;
     const costoSteam = parseInt(precioSteamStr.replace(/\D/g, '')); 
     const precioClienteStr = document.getElementById('res-final').innerText;
     const costoCliente = parseInt(precioClienteStr.replace(/\D/g, ''));
 
     if (costoSteam <= 100 || costoCliente <= 0) {
-        Swal.fire('Error de Datos', 'Los montos no son válidos. Recarga e intenta de nuevo.', 'error');
+        Swal.fire('Error de Datos', 'Los montos no son válidos. Recarga la página e intenta de nuevo.', 'error');
         return;
     }
 
     // 1. INICIAR ALERTA CON FEEDBACK
     Swal.fire({ 
         title: 'Procesando Pedido', 
-        html: 'Iniciando sistema...', // Texto inicial
+        html: 'Iniciando sistema...', 
         allowOutsideClick: false,
         didOpen: () => Swal.showLoading() 
     });
@@ -262,11 +266,11 @@ form.addEventListener('submit', async function(event) {
     };
 
     try {
-        // PASO 1: IMAGEN
+        // PASO 1: IMAGEN COMPROBANTE
         updateStatus('1/4 Optimizando imagen...');
         const comprobanteBase64 = await comprimirImagen(inputComprobante.files[0]);
 
-        // PASO 2: VERIFICACIÓN
+        // PASO 2: VERIFICACIÓN CUPO
         updateStatus('2/4 Verificando cupo disponible...');
         
         runTransaction(saldoRef, (saldoActual) => {
@@ -279,9 +283,14 @@ form.addEventListener('submit', async function(event) {
                 updateStatus('3/4 Guardando tu pedido...');
                 const user = auth.currentUser; 
 
+                // >>> CAPTURAMOS LA IMAGEN DEL JUEGO AQUÍ <<<
+                const coverImgSrc = document.getElementById('gameCover')?.src || '';
+
                 const nuevaOrdenRef = push(ref(db, 'ordenes'));
                 set(nuevaOrdenRef, {
                     fecha: new Date().toISOString(),
+                    // Guardamos la URL de la imagen del juego
+                    imagen_juego: coverImgSrc,
                     email: form.email.value,
                     rut: form.rut.value, 
                     juego: form.juego.value,

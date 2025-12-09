@@ -108,31 +108,35 @@
         </div>
 
         <div class="card" style="margin-top: 20px;">
-            <h3>Historial de Pedidos Recientes</h3>
-            <div class="card" style="margin-top: 20px;">
-                <h3>Gestión de Pedidos</h3>
+            <h3>Gestión de Pedidos</h3>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+                <input type="text" id="searchInput" class="input-admin" placeholder="Buscar por Email, RUT o Juego...">
                 
-                <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
-                    <input type="text" id="searchInput" class="input-admin" placeholder="Buscar por Email, RUT o Juego...">
-                    
-                    <select id="filterStatus" class="input-admin" style="max-width: 150px;">
-                        <option value="todos">Todos</option>
-                        <option value="pendiente">⏳ Pendientes</option>
-                        <option value="completado">✅ Completados</option>
-                        <option value="cancelado">🚫 Cancelados</option>
-                    </select>
-                </div>
+                <select id="filterStatus" class="input-admin" style="max-width: 150px;">
+                    <option value="todos">Todos</option>
+                    <option value="pendiente">⏳ Pendientes</option>
+                    <option value="completado">✅ Completados</option>
+                    <option value="cancelado">🚫 Cancelados</option>
+                </select>
+            </div>
 
-                <div style="overflow-x: auto;">
-                    <table class="admin-table orders-table">
-                        <thead>
-                            <tr><th>Fecha</th><th>Email / Rut</th><th>Juego / Plataforma</th><th>Total Pagado</th><th>Estado</th><th>Acción</th></tr>
-                        </thead>
-                        <tbody id="ordersList">
-                            <tr><td colspan="6" style="text-align:center;">Cargando pedidos...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+            <div style="overflow-x: auto;">
+                <table class="admin-table orders-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Email / Rut</th>
+                            <th>Juego / Plataforma</th>
+                            <th>Total Pagado</th>
+                            <th>Estado</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersList">
+                        <tr><td colspan="6" style="text-align:center;">Cargando pedidos...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>

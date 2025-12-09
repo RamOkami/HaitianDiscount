@@ -1,4 +1,4 @@
-import { ref, onValue, set, update, remove, child, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { ref, onValue, set, update, remove, child, get, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 // IMPORTAMOS TODO DESDE CONFIG.JS
 import { db, auth, provider, initTheme } from './config.js';
@@ -17,13 +17,10 @@ const loginCard = document.getElementById('loginCard');
 // 1. AUTH CON VERIFICACIÓN DE ROL EN DB
 onAuthStateChanged(auth, async (user) => {
     if (user) {
-        // Verificar si es admin consultando la DB (Más seguro que hardcoded)
         const adminRef = ref(db, `admins/${user.uid}`);
-        
         try {
             const snapshot = await get(adminRef);
             if (snapshot.exists() && snapshot.val() === true) {
-                // Es admin verificado
                 loginOverlay.style.display = 'none';
                 adminContent.style.display = 'block';
                 iniciarListeners(); 
@@ -31,7 +28,6 @@ onAuthStateChanged(auth, async (user) => {
                 throw new Error("No admin");
             }
         } catch (e) {
-            // No es admin o error
             Swal.fire({
                 icon: 'error',
                 title: 'Acceso Denegado',
@@ -42,7 +38,6 @@ onAuthStateChanged(auth, async (user) => {
             });
         }
     } else {
-        // No hay usuario
         loginOverlay.style.display = 'flex';
         adminContent.style.display = 'none';
         loaderView.style.display = 'none'; 
@@ -50,11 +45,9 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-// --- LOGIN CON GOOGLE ---
 document.getElementById('btnGoogleAdmin').addEventListener('click', () => {
     loginCard.style.display = 'none';
     loaderView.style.display = 'block';
-    
     signInWithPopup(auth, provider).catch((error) => {
         loaderView.style.display = 'none';
         loginCard.style.display = 'block';
@@ -62,21 +55,17 @@ document.getElementById('btnGoogleAdmin').addEventListener('click', () => {
     });
 });
 
-// LOGIN CON CORREO
 document.getElementById('loginForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const email = document.getElementById('email').value;
     const pass = document.getElementById('password').value;
-    
     loginCard.style.display = 'none';
     loaderView.style.display = 'block';
-
-    signInWithEmailAndPassword(auth, email, pass)
-        .catch(err => {
-            loaderView.style.display = 'none';
-            loginCard.style.display = 'block';
-            Swal.fire('Error', 'Credenciales incorrectas', 'error');
-        });
+    signInWithEmailAndPassword(auth, email, pass).catch(err => {
+        loaderView.style.display = 'none';
+        loginCard.style.display = 'block';
+        Swal.fire('Error', 'Credenciales incorrectas', 'error');
+    });
 });
 
 document.getElementById('btnLogout').addEventListener('click', () => {
@@ -115,7 +104,6 @@ function iniciarListeners() {
         set(estadoSteamRef, nuevo);
     });
 
-
     // --- B. GESTIÓN ENEBA ---
     const saldoEnebaRef = ref(db, 'presupuesto_eneba');
     const estadoEnebaRef = ref(db, 'estado_eneba');
@@ -144,7 +132,6 @@ function iniciarListeners() {
         const nuevo = estadoActualEneba === 'abierto' ? 'cerrado' : 'abierto';
         set(estadoEnebaRef, nuevo);
     });
-
 
     // --- C. CÓDIGOS VIP ---
     const vipRef = ref(db, 'codigos_vip');
@@ -188,82 +175,78 @@ function iniciarListeners() {
 
     // --- D. HISTORIAL PEDIDOS CON FILTROS ---
     const ordenesRef = ref(db, 'ordenes');
-    let todasLasOrdenes = []; // Variable para guardar los datos crudos
+    let todasLasOrdenes = []; 
 
-    // Referencias al DOM de filtros
     const searchInput = document.getElementById('searchInput');
     const filterStatus = document.getElementById('filterStatus');
 
-    // Escuchar cambios en la base de datos
     onValue(ordenesRef, (snap) => {
         const data = snap.val();
-        todasLasOrdenes = []; // Limpiar
+        todasLasOrdenes = []; 
 
         if (data) {
-            // Convertir objeto a array y ordenar por fecha (más nuevo primero)
             todasLasOrdenes = Object.entries(data).map(([id, info]) => ({ id, ...info }))
                                     .sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
         }
-        
-        // Dibujar la tabla inicial
         renderizarTabla();
     });
 
-    // Función para dibujar la tabla aplicando filtros
+    // --- RENDERIZADO AJUSTADO AL NUEVO FORMATO ---
     function renderizarTabla() {
         ordersList.innerHTML = '';
         const textoBusqueda = searchInput.value.toLowerCase();
         const estadoFiltro = filterStatus.value;
 
-        // Filtrar datos
         const ordenesFiltradas = todasLasOrdenes.filter(orden => {
             const cumpleEstado = estadoFiltro === 'todos' || orden.estado === estadoFiltro;
-            
-            // Búsqueda segura (valida que los campos existan)
             const email = (orden.email || '').toLowerCase();
             const rut = (orden.rut || '').toLowerCase();
             const juego = (orden.juego || '').toLowerCase();
-            
-            const cumpleBusqueda = email.includes(textoBusqueda) || 
-                                   rut.includes(textoBusqueda) || 
-                                   juego.includes(textoBusqueda);
-
+            const cumpleBusqueda = email.includes(textoBusqueda) || rut.includes(textoBusqueda) || juego.includes(textoBusqueda);
             return cumpleEstado && cumpleBusqueda;
         });
 
         if (ordenesFiltradas.length === 0) {
-            ordersList.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">No se encontraron pedidos con esos filtros.</td></tr>';
+            ordersList.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">No se encontraron pedidos.</td></tr>';
             return;
         }
 
-        window.imagenesComprobantes = {}; // Reiniciar caché de imágenes
+        window.imagenesComprobantes = {}; 
 
         ordenesFiltradas.forEach(orden => {
             const id = orden.id;
-            const fecha = new Date(orden.fecha).toLocaleString('es-CL');
+            const fecha = new Date(orden.fecha).toLocaleString('es-CL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute:'2-digit'});
             const monto = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(orden.precio_pagado);
             const estado = orden.estado || 'pendiente';
             const plat = orden.plataforma || 'Steam';
             const platStyle = plat === 'Eneba' ? 'color: #a855f7;' : 'color: #2563eb;';
             
-            let btnComprobante = '<span style="color:#ccc; font-size:0.8rem;">Sin foto</span>';
+            // Botón Comprobante (Sin Foto)
+            let btnComprobante = '<span style="color:#ccc; font-size:0.7rem;">Sin foto</span>';
             if(orden.comprobante_img) {
                 window.imagenesComprobantes[id] = orden.comprobante_img;
-                btnComprobante = `<button class="btn btn-sm" style="background:#64748b; color:white;" onclick="verComprobante('${id}')">📷 Ver</button>`;
+                // Botón más discreto debajo del precio
+                btnComprobante = `<button class="btn btn-sm" style="background:transparent; border:1px solid #64748b; color:#64748b; padding:2px 6px; font-size:0.7rem; margin-top:4px;" onclick="verComprobante('${id}')">📷 Ver Foto</button>`;
             }
 
             const fila = `
                 <tr>
                     <td style="font-size: 0.8rem; color: #64748b;">${fecha}</td>
+                    
                     <td>
-                        <div style="font-weight:600;">${orden.email}</div>
+                        <div style="font-weight:600; font-size:0.9rem;">${orden.email}</div>
                         <div style="font-size:0.75rem; color:#64748b;">RUT: ${orden.rut || 'N/A'}</div>
                     </td>
+
                     <td>
-                        <div style="${platStyle} font-weight: bold; font-size: 0.8rem;">${plat.toUpperCase()}</div>
-                        <div style="font-weight:500;">${orden.juego}</div>
+                        <div style="${platStyle} font-weight: bold; font-size: 0.75rem; margin-bottom:2px;">${plat.toUpperCase()}</div>
+                        <div style="font-weight:500; font-size:0.9rem;">${orden.juego}</div>
                     </td>
-                    <td style="font-weight:bold;">${monto} <br> ${btnComprobante}</td>
+                    
+                    <td>
+                        <div style="font-weight:bold; font-size:0.95rem;">${monto}</div>
+                        ${btnComprobante}
+                    </td>
                     
                     <td>
                         <select onchange="cambiarEstado('${id}', this.value)" class="status-select status-${estado}">
@@ -282,7 +265,6 @@ function iniciarListeners() {
         });
     }
 
-    // Eventos de los filtros (para que se actualice al escribir/cambiar)
     searchInput.addEventListener('input', renderizarTabla);
     filterStatus.addEventListener('change', renderizarTabla);
 
@@ -299,12 +281,50 @@ function iniciarListeners() {
         }
     };
 
-    window.cambiarEstado = (id, nuevoEstado) => {
-        update(child(ordenesRef, id), { estado: nuevoEstado })
-            .then(() => {
-                const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
-                Toast.fire({ icon: 'success', title: 'Estado actualizado' });
-            });
+    // --- FUNCIÓN DE REEMBOLSO ---
+    window.cambiarEstado = async (id, nuevoEstado) => {
+        const ordenRef = ref(db, `ordenes/${id}`);
+        
+        try {
+            const snapshot = await get(ordenRef);
+            if (!snapshot.exists()) return;
+            
+            const orden = snapshot.val();
+            const estadoAnterior = orden.estado;
+            const costoOriginal = orden.precio_steam; 
+            const plataforma = orden.plataforma;
+
+            if (nuevoEstado === 'cancelado' && estadoAnterior !== 'cancelado') {
+                
+                let presupuestoRefStr = '';
+                if (plataforma === 'Steam') presupuestoRefStr = 'presupuesto_steam';
+                else if (plataforma === 'Eneba') presupuestoRefStr = 'presupuesto_eneba';
+
+                if (presupuestoRefStr && costoOriginal > 0) {
+                    const budgetRef = ref(db, presupuestoRefStr);
+                    await runTransaction(budgetRef, (cupoActual) => {
+                        return (cupoActual || 0) + costoOriginal;
+                    });
+                    
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Cupo Reembolsado',
+                        text: `Se han devuelto $${costoOriginal} al cupo de ${plataforma}.`,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
+            }
+
+            await update(ordenRef, { estado: nuevoEstado });
+            
+            const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+            Toast.fire({ icon: 'success', title: 'Estado actualizado' });
+
+        } catch (error) {
+            console.error(error);
+            Swal.fire('Error', 'No se pudo actualizar el estado', 'error');
+        }
     };
 
     window.borrarOrden = (id) => {
