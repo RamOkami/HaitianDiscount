@@ -1,9 +1,8 @@
 import { ref, onValue, runTransaction, get, child, push, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-// IMPORTAMOS TODO DESDE CONFIG
-import { db, auth, initTheme, initImageZoom } from './config.js';
+// IMPORTAMOS TODO DESDE CONFIG (INCLUYENDO FUNCIONES NUEVAS)
+import { db, auth, initTheme, initImageZoom, comprimirImagen, configurarValidacionRut } from './config.js';
 
-// Iniciar Tema y Zoom
 initTheme();
 initImageZoom();
 
@@ -25,7 +24,13 @@ const inputRut = document.getElementById('rut');
 let rutEsValido = false;
 
 if(btnCalc) { btnCalc.addEventListener('click', calcularDescuento); }
-if(inputRut) { configurarValidacionRut(inputRut); }
+
+// USAMOS LA VALIDACIÓN IMPORTADA
+if(inputRut) { 
+    configurarValidacionRut(inputRut, (estado) => {
+        rutEsValido = estado;
+    });
+}
 
 const formatoDinero = (valor) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(valor);
 
@@ -129,70 +134,6 @@ function mostrarResultadosUI(precioOriginal, precioFinal, esVip, descuentoValor 
     }
 }
 
-function comprimirImagen(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = (event) => {
-            const img = new Image();
-            img.src = event.target.result;
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                const maxWidth = 800; 
-                const scaleSize = maxWidth / img.width;
-                canvas.width = maxWidth;
-                canvas.height = img.height * scaleSize;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                const dataUrl = canvas.toDataURL('image/jpeg', 0.6); 
-                resolve(dataUrl);
-            };
-            img.onerror = (err) => reject(err);
-        };
-        reader.onerror = (err) => reject(err);
-    });
-}
-
-function configurarValidacionRut(rutInput) {
-    rutInput.addEventListener('input', function(e) {
-        let valor = e.target.value.replace(/[^0-9kK]/g, '');
-        if (valor.length > 1) {
-            const cuerpo = valor.slice(0, -1);
-            const dv = valor.slice(-1).toUpperCase();
-            let rutFormateado = cuerpo.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-            e.target.value = `${rutFormateado}-${dv}`;
-            if(validarRut(cuerpo, dv)) {
-                rutEsValido = true;
-                e.target.style.borderColor = "var(--success)";
-                e.target.style.boxShadow = "0 0 0 2px rgba(16, 185, 129, 0.2)";
-            } else {
-                rutEsValido = false;
-                e.target.style.borderColor = "var(--danger)";
-                e.target.style.boxShadow = "0 0 0 2px rgba(239, 68, 68, 0.2)";
-            }
-        } else {
-            rutEsValido = false;
-            e.target.style.borderColor = "var(--border)";
-            e.target.style.boxShadow = "none";
-        }
-    });
-}
-
-function validarRut(cuerpo, dv) {
-    if(cuerpo.length < 6) return false;
-    let suma = 0;
-    let multiplo = 2;
-    for(let i = 1; i <= cuerpo.length; i++) {
-        const index = multiplo * valorAt(cuerpo.length - i);
-        suma = suma + index;
-        if(multiplo < 7) { multiplo = multiplo + 1; } else { multiplo = 2; }
-    }
-    const dvEsperado = 11 - (suma % 11);
-    const dvCalc = (dvEsperado == 11) ? "0" : ((dvEsperado == 10) ? "K" : dvEsperado.toString());
-    return dvCalc === dv;
-    function valorAt(pos) { return parseInt(cuerpo.charAt(pos)); }
-}
-
 onAuthStateChanged(auth, (user) => {
     if (user) {
         const emailInput = document.getElementById('email');
@@ -237,23 +178,35 @@ form.addEventListener('submit', async function(event) {
         return;
     }
 
-    // --- SEGURIDAD AGREGADA: VERIFICACIÓN FINAL DE MONTOS ---
     const precioOriginalStr = document.getElementById('res-original').innerText;
     const costoOriginal = parseInt(precioOriginalStr.replace(/\D/g, '')); 
     const precioClienteStr = document.getElementById('res-final').innerText;
     const costoCliente = parseInt(precioClienteStr.replace(/\D/g, ''));
 
-    // Validación anti-hack simple
     if (costoOriginal <= 100 || costoCliente <= 0) {
         Swal.fire('Error de Datos', 'Los montos no son válidos. Recarga e intenta de nuevo.', 'error');
         return;
     }
-    // --------------------------------------------------------
 
-    Swal.fire({ title: 'Procesando...', text: 'Subiendo comprobante...', didOpen: () => Swal.showLoading() });
+    // 1. INICIAR ALERTA CON FEEDBACK
+    Swal.fire({ 
+        title: 'Procesando Pedido', 
+        html: 'Iniciando sistema...', 
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading() 
+    });
+
+    const updateStatus = (texto) => {
+        if(Swal.getHtmlContainer()) Swal.getHtmlContainer().textContent = texto;
+    };
 
     try {
+        // PASO 1: IMAGEN
+        updateStatus('1/4 Optimizando imagen...');
         const comprobanteBase64 = await comprimirImagen(inputComprobante.files[0]);
+
+        // PASO 2: VERIFICACIÓN
+        updateStatus('2/4 Verificando cupo disponible...');
 
         runTransaction(saldoRef, (saldoActual) => {
             const actual = saldoActual || 0;
@@ -261,6 +214,8 @@ form.addEventListener('submit', async function(event) {
             else return; 
         }).then((result) => {
             if (result.committed) {
+                // PASO 3: GUARDAR EN DB
+                updateStatus('3/4 Guardando tu pedido...');
                 const user = auth.currentUser; 
 
                 const nuevaOrdenRef = push(ref(db, 'ordenes'));
@@ -277,6 +232,8 @@ form.addEventListener('submit', async function(event) {
                     uid: user ? user.uid : null 
                 });
 
+                // PASO 4: ENVIAR CORREO
+                updateStatus('4/4 Enviando confirmación...');
                 emailjs.sendForm(SERVICE_ID, TEMPLATE_ID, form).then(() => {
                     Swal.fire('¡Pedido Eneba Recibido!', 'Hemos recibido tu comprobante y pedido.', 'success');
                     form.reset();
@@ -288,11 +245,11 @@ form.addEventListener('submit', async function(event) {
                     btnEnviar.disabled = true;
                 });
             } else {
-                Swal.fire('Lo sentimos', 'Cupo de Eneba agotado.', 'error');
+                Swal.fire('Lo sentimos', 'Cupo de Eneba agotado en este instante.', 'error');
             }
         });
     } catch (err) {
         console.error(err);
-        Swal.fire('Error', 'Error al procesar la imagen o el pedido.', 'error');
+        Swal.fire('Error', 'Ocurrió un error al procesar la solicitud.', 'error');
     }
 });

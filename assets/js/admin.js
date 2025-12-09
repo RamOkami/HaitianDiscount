@@ -186,65 +186,105 @@ function iniciarListeners() {
         });
     };
 
-    // --- D. HISTORIAL PEDIDOS ---
+    // --- D. HISTORIAL PEDIDOS CON FILTROS ---
     const ordenesRef = ref(db, 'ordenes');
+    let todasLasOrdenes = []; // Variable para guardar los datos crudos
+
+    // Referencias al DOM de filtros
+    const searchInput = document.getElementById('searchInput');
+    const filterStatus = document.getElementById('filterStatus');
+
+    // Escuchar cambios en la base de datos
     onValue(ordenesRef, (snap) => {
-        ordersList.innerHTML = '';
         const data = snap.val();
-        
+        todasLasOrdenes = []; // Limpiar
+
         if (data) {
-            const listaOrdenada = Object.entries(data).sort((a, b) => {
-                return new Date(b[1].fecha) - new Date(a[1].fecha);
-            });
-
-            window.imagenesComprobantes = {};
-
-            listaOrdenada.forEach(([id, orden]) => {
-                const fecha = new Date(orden.fecha).toLocaleString('es-CL');
-                const monto = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(orden.precio_pagado);
-                
-                const estado = orden.estado || 'pendiente';
-                const plat = orden.plataforma || 'Steam';
-                const platStyle = plat === 'Eneba' ? 'color: #a855f7; font-weight: bold; font-size: 0.8rem;' : 'color: #2563eb; font-weight: bold; font-size: 0.8rem;';
-                
-                let btnComprobante = '<span style="color:#ccc; font-size:0.8rem;">Sin foto</span>';
-                if(orden.comprobante_img) {
-                    window.imagenesComprobantes[id] = orden.comprobante_img;
-                    btnComprobante = `<button class="btn btn-sm" style="background:#64748b; color:white;" onclick="verComprobante('${id}')">📷 Ver</button>`;
-                }
-
-                const fila = `
-                    <tr>
-                        <td style="font-size: 0.8rem; color: #64748b;">${fecha}</td>
-                        <td>
-                            <div style="font-weight:600;">${orden.email}</div>
-                            <div style="font-size:0.75rem; color:#64748b;">RUT: ${orden.rut || 'N/A'}</div>
-                        </td>
-                        <td>
-                            <div style="${platStyle}">${plat.toUpperCase()}</div>
-                            <div style="font-weight:500;">${orden.juego}</div>
-                        </td>
-                        <td style="font-weight:bold;">${monto} <br> ${btnComprobante}</td>
-                        
-                        <td>
-                            <select onchange="cambiarEstado('${id}', this.value)" class="status-select status-${estado}">
-                                <option value="pendiente" ${estado === 'pendiente' ? 'selected' : ''}>⏳ Pendiente</option>
-                                <option value="completado" ${estado === 'completado' ? 'selected' : ''}>✅ Completado</option>
-                                <option value="cancelado" ${estado === 'cancelado' ? 'selected' : ''}>🚫 Cancelado</option>
-                            </select>
-                        </td>
-
-                        <td>
-                            <button class="btn btn-danger btn-sm" onclick="borrarOrden('${id}')">X</button>
-                        </td>
-                    </tr>
-                `;
-                ordersList.innerHTML += fila;
-            });
-        } else {
-            ordersList.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">No hay ventas registradas</td></tr>';
+            // Convertir objeto a array y ordenar por fecha (más nuevo primero)
+            todasLasOrdenes = Object.entries(data).map(([id, info]) => ({ id, ...info }))
+                                    .sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
         }
+        
+        // Dibujar la tabla inicial
+        renderizarTabla();
     });
+
+    // Función para dibujar la tabla aplicando filtros
+    function renderizarTabla() {
+        ordersList.innerHTML = '';
+        const textoBusqueda = searchInput.value.toLowerCase();
+        const estadoFiltro = filterStatus.value;
+
+        // Filtrar datos
+        const ordenesFiltradas = todasLasOrdenes.filter(orden => {
+            const cumpleEstado = estadoFiltro === 'todos' || orden.estado === estadoFiltro;
+            
+            // Búsqueda segura (valida que los campos existan)
+            const email = (orden.email || '').toLowerCase();
+            const rut = (orden.rut || '').toLowerCase();
+            const juego = (orden.juego || '').toLowerCase();
+            
+            const cumpleBusqueda = email.includes(textoBusqueda) || 
+                                   rut.includes(textoBusqueda) || 
+                                   juego.includes(textoBusqueda);
+
+            return cumpleEstado && cumpleBusqueda;
+        });
+
+        if (ordenesFiltradas.length === 0) {
+            ordersList.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">No se encontraron pedidos con esos filtros.</td></tr>';
+            return;
+        }
+
+        window.imagenesComprobantes = {}; // Reiniciar caché de imágenes
+
+        ordenesFiltradas.forEach(orden => {
+            const id = orden.id;
+            const fecha = new Date(orden.fecha).toLocaleString('es-CL');
+            const monto = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(orden.precio_pagado);
+            const estado = orden.estado || 'pendiente';
+            const plat = orden.plataforma || 'Steam';
+            const platStyle = plat === 'Eneba' ? 'color: #a855f7;' : 'color: #2563eb;';
+            
+            let btnComprobante = '<span style="color:#ccc; font-size:0.8rem;">Sin foto</span>';
+            if(orden.comprobante_img) {
+                window.imagenesComprobantes[id] = orden.comprobante_img;
+                btnComprobante = `<button class="btn btn-sm" style="background:#64748b; color:white;" onclick="verComprobante('${id}')">📷 Ver</button>`;
+            }
+
+            const fila = `
+                <tr>
+                    <td style="font-size: 0.8rem; color: #64748b;">${fecha}</td>
+                    <td>
+                        <div style="font-weight:600;">${orden.email}</div>
+                        <div style="font-size:0.75rem; color:#64748b;">RUT: ${orden.rut || 'N/A'}</div>
+                    </td>
+                    <td>
+                        <div style="${platStyle} font-weight: bold; font-size: 0.8rem;">${plat.toUpperCase()}</div>
+                        <div style="font-weight:500;">${orden.juego}</div>
+                    </td>
+                    <td style="font-weight:bold;">${monto} <br> ${btnComprobante}</td>
+                    
+                    <td>
+                        <select onchange="cambiarEstado('${id}', this.value)" class="status-select status-${estado}">
+                            <option value="pendiente" ${estado === 'pendiente' ? 'selected' : ''}>⏳ Pendiente</option>
+                            <option value="completado" ${estado === 'completado' ? 'selected' : ''}>✅ Completado</option>
+                            <option value="cancelado" ${estado === 'cancelado' ? 'selected' : ''}>🚫 Cancelado</option>
+                        </select>
+                    </td>
+
+                    <td>
+                        <button class="btn btn-danger btn-sm" onclick="borrarOrden('${id}')">X</button>
+                    </td>
+                </tr>
+            `;
+            ordersList.innerHTML += fila;
+        });
+    }
+
+    // Eventos de los filtros (para que se actualice al escribir/cambiar)
+    searchInput.addEventListener('input', renderizarTabla);
+    filterStatus.addEventListener('change', renderizarTabla);
 
     window.verComprobante = (id) => {
         const imgData = window.imagenesComprobantes[id];

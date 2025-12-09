@@ -1,10 +1,9 @@
 import { ref, onValue, query, orderByChild, equalTo, get, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 import { signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-// IMPORTAR CONFIGURACIÓN Y TEMA DESDE CONFIG.JS
-import { db, auth, provider, initTheme } from './config.js';
+// IMPORTAMOS configurarValidacionRut DESDE CONFIG
+import { db, auth, provider, initTheme, configurarValidacionRut } from './config.js';
 
-// 1. INICIAR TEMA (Desde config.js)
 initTheme();
 
 // DOM Elements
@@ -23,12 +22,14 @@ const btnSaveData = document.getElementById('btnSaveData');
 // Estado Validación RUT
 let rutEsValido = false;
 
-// Inicializar validación en el input si existe
+// Inicializar validación usando la función importada
 if (profileRut) {
-    configurarValidacionRut(profileRut);
+    configurarValidacionRut(profileRut, (esValido) => {
+        rutEsValido = esValido;
+    });
 }
 
-// ADMINS
+// ADMINS (NOTA: Esto es solo visual, la seguridad real está en las Reglas de Firebase)
 const ADMIN_UIDS = [
     'y7wKykEchQON3tS22mRhJURsHOv1', 
     'DEKH3yxMy6hCTkdbvwZl4dkFlnc2' 
@@ -161,48 +162,3 @@ tabs.forEach(tab => {
         document.getElementById(targetId).classList.add('active');
     });
 });
-
-// 6. VALIDACIÓN RUT (Lógica Compartida)
-function configurarValidacionRut(rutInput) {
-    rutInput.addEventListener('input', function(e) {
-        let valor = e.target.value.replace(/[^0-9kK]/g, '');
-        if (valor.length > 1) {
-            const cuerpo = valor.slice(0, -1);
-            const dv = valor.slice(-1).toUpperCase();
-            
-            // Formatear
-            let rutFormateado = cuerpo.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-            e.target.value = `${rutFormateado}-${dv}`;
-            
-            // Validar
-            if(validarRut(cuerpo, dv)) {
-                rutEsValido = true;
-                e.target.style.borderColor = "var(--success)"; // Verde
-                e.target.style.boxShadow = "0 0 0 2px rgba(16, 185, 129, 0.2)";
-            } else {
-                rutEsValido = false;
-                e.target.style.borderColor = "var(--danger)"; // Rojo
-                e.target.style.boxShadow = "0 0 0 2px rgba(239, 68, 68, 0.2)";
-            }
-        } else {
-            rutEsValido = false;
-            e.target.style.borderColor = "var(--border)"; // Normal
-            e.target.style.boxShadow = "none";
-        }
-    });
-}
-
-function validarRut(cuerpo, dv) {
-    if(cuerpo.length < 6) return false;
-    let suma = 0;
-    let multiplo = 2;
-    for(let i = 1; i <= cuerpo.length; i++) {
-        const index = multiplo * valorAt(cuerpo.length - i);
-        suma = suma + index;
-        if(multiplo < 7) { multiplo = multiplo + 1; } else { multiplo = 2; }
-    }
-    const dvEsperado = 11 - (suma % 11);
-    const dvCalc = (dvEsperado == 11) ? "0" : ((dvEsperado == 10) ? "K" : dvEsperado.toString());
-    return dvCalc === dv;
-    function valorAt(pos) { return parseInt(cuerpo.charAt(pos)); }
-}

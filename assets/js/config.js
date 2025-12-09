@@ -38,7 +38,6 @@ export function initTheme() {
     }
 
     if(btnTheme) {
-        // Clonamos para limpiar eventos previos
         const newBtn = btnTheme.cloneNode(true);
         btnTheme.parentNode.replaceChild(newBtn, btnTheme);
 
@@ -55,12 +54,12 @@ export function initTheme() {
     }
 }
 
-// --- 3. LÓGICA DE ZOOM DE IMÁGENES (TAMAÑO UNIFICADO - DESACTIVADO EN MÓVIL) ---
+// --- 3. LÓGICA DE ZOOM DE IMÁGENES (RESPONSIVE + TAMAÑO UNIFICADO) ---
 export function initImageZoom() {
     const activarZoom = () => {
         const stepImages = document.querySelectorAll('.step-image-container img');
         
-        if(stepImages.length === 0) console.log("No se encontraron imágenes para zoom.");
+        if(stepImages.length === 0) return;
 
         stepImages.forEach(img => {
             if (img.dataset.zoomEnabled) return; 
@@ -68,21 +67,16 @@ export function initImageZoom() {
             const container = img.closest('.step-image-container');
             
             if (container) {
-                // SOLO cambiamos el cursor a "lupa" si la pantalla es grande (Desktop)
+                // Cursor lupa solo en PC
                 if (window.innerWidth > 768) {
                     container.style.cursor = "zoom-in"; 
                 } else {
-                    container.style.cursor = "default"; // Cursor normal en móvil
+                    container.style.cursor = "default"; 
                 }
 
                 container.addEventListener('click', (e) => {
-                    // --- NUEVA VALIDACIÓN RESPONSIVE ---
-                    // Si la pantalla es menor o igual a 768px (Móviles y Tablets verticales)
-                    // detenemos la función aquí. No se abre el zoom.
-                    if (window.innerWidth <= 768) {
-                        return; 
-                    }
-                    // -----------------------------------
+                    // Bloquear en móvil
+                    if (window.innerWidth <= 768) return; 
 
                     e.preventDefault(); 
                     e.stopPropagation(); 
@@ -93,28 +87,17 @@ export function initImageZoom() {
                         showConfirmButton: false,
                         showCloseButton: true,
                         background: 'var(--bg-card)', 
-                        
-                        // --- AJUSTES VISUALES ---
-                        padding: '0',       // Sin margen blanco extra
-                        width: 'auto',      // El ancho lo controla la imagen
-                        backdrop: `rgba(0,0,0,0.9)`, // Fondo muy oscuro para resaltar
-                        // -----------------------
-
-                        customClass: {
-                            popup: 'swal2-no-padding' // Clase auxiliar si fuera necesaria
-                        },
+                        padding: '0',
+                        width: 'auto',
+                        backdrop: `rgba(0,0,0,0.9)`, 
+                        customClass: { popup: 'swal2-no-padding' },
                         didOpen: () => {
                             const swalImg = Swal.getImage();
                             if(swalImg) {
-                                // --- TUS PROPORCIONES PERSONALIZADAS ---
-                                swalImg.style.width = '45vw';  // 45% del ancho de la pantalla
-                                swalImg.style.height = '60vh'; // 60% del alto de la pantalla
-                                
-                                // "contain" asegura que la imagen quepa entera sin estirarse
+                                swalImg.style.width = '45vw';  
+                                swalImg.style.height = '60vh'; 
                                 swalImg.style.objectFit = 'contain'; 
-                                
                                 swalImg.style.backgroundColor = 'transparent'; 
-                                
                                 swalImg.style.margin = '0 auto';
                                 swalImg.style.display = 'block';
                             }
@@ -132,4 +115,74 @@ export function initImageZoom() {
     } else {
         activarZoom();
     }
+}
+
+// --- 4. FUNCIONES UTILITARIAS COMPARTIDAS ---
+
+// A. Validar RUT
+export function validarRut(cuerpo, dv) {
+    if(cuerpo.length < 6) return false;
+    let suma = 0;
+    let multiplo = 2;
+    for(let i = 1; i <= cuerpo.length; i++) {
+        const index = multiplo * parseInt(cuerpo.charAt(cuerpo.length - i));
+        suma = suma + index;
+        if(multiplo < 7) { multiplo = multiplo + 1; } else { multiplo = 2; }
+    }
+    const dvEsperado = 11 - (suma % 11);
+    const dvCalc = (dvEsperado == 11) ? "0" : ((dvEsperado == 10) ? "K" : dvEsperado.toString());
+    return dvCalc === dv;
+}
+
+// B. Configurar Input RUT (Visual + Callback)
+export function configurarValidacionRut(rutInput, callbackEstado) {
+    rutInput.addEventListener('input', function(e) {
+        let valor = e.target.value.replace(/[^0-9kK]/g, '');
+        if (valor.length > 1) {
+            const cuerpo = valor.slice(0, -1);
+            const dv = valor.slice(-1).toUpperCase();
+            
+            let rutFormateado = cuerpo.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            e.target.value = `${rutFormateado}-${dv}`;
+            
+            if(validarRut(cuerpo, dv)) {
+                e.target.style.borderColor = "var(--success)";
+                e.target.style.boxShadow = "0 0 0 2px rgba(16, 185, 129, 0.2)";
+                if(callbackEstado) callbackEstado(true);
+            } else {
+                e.target.style.borderColor = "var(--danger)";
+                e.target.style.boxShadow = "0 0 0 2px rgba(239, 68, 68, 0.2)";
+                if(callbackEstado) callbackEstado(false);
+            }
+        } else {
+            e.target.style.borderColor = "var(--border)";
+            e.target.style.boxShadow = "none";
+            if(callbackEstado) callbackEstado(false);
+        }
+    });
+}
+
+// C. Comprimir Imagen
+export function comprimirImagen(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const maxWidth = 800; 
+                const scaleSize = maxWidth / img.width;
+                canvas.width = maxWidth;
+                canvas.height = img.height * scaleSize;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.6); 
+                resolve(dataUrl);
+            };
+            img.onerror = (err) => reject(err);
+        };
+        reader.onerror = (err) => reject(err);
+    });
 }
