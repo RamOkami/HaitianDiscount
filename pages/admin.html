@@ -58,93 +58,111 @@
     </nav>
 
     <div class="container" id="adminContent">
-        <div class="section-header"><span class="tag-steam">STEAM</span> Gestión de Tienda</div>
-        <div class="dashboard-grid">
-            <div class="card card-steam">
-                <h3>Estado Steam</h3>
-                <div id="statusSteamDisplay" class="big-text">Cargando...</div>
-                <div class="control-row"><button id="btnToggleSteam" class="btn btn-primary">Cambiar Estado</button></div>
+        
+        <div class="admin-tabs">
+            <button class="tab-btn active" data-target="tab-tienda">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                Gestión Tienda
+            </button>
+            <button class="tab-btn" data-target="tab-vip">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" /></svg>
+                Códigos VIP
+            </button>
+            <button class="tab-btn" data-target="tab-pedidos">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
+                Pedidos
+            </button>
+        </div>
+
+        <div id="tab-tienda" class="tab-content active">
+            <div class="section-header"><span class="tag-steam">STEAM</span> Configuración</div>
+            <div class="dashboard-grid">
+                <div class="card card-steam">
+                    <h3>Estado Steam</h3>
+                    <div id="statusSteamDisplay" class="big-text">Cargando...</div>
+                    <div class="control-row"><button id="btnToggleSteam" class="btn btn-primary">Cambiar Estado</button></div>
+                </div>
+                <div class="card card-steam">
+                    <h3>Cupo Steam (CLP)</h3>
+                    <div id="budgetSteamDisplay" class="big-text">$...</div>
+                    <div class="control-row">
+                        <input type="number" id="newBudgetSteam" class="input-admin" placeholder="Nuevo monto">
+                        <button id="btnUpdateBudgetSteam" class="btn btn-primary">Actualizar</button>
+                    </div>
+                </div>
             </div>
-            <div class="card card-steam">
-                <h3>Cupo Steam (CLP)</h3>
-                <div id="budgetSteamDisplay" class="big-text">$...</div>
-                <div class="control-row">
-                    <input type="number" id="newBudgetSteam" class="input-admin" placeholder="Nuevo monto">
-                    <button id="btnUpdateBudgetSteam" class="btn btn-primary">Actualizar</button>
+
+            <div class="section-header"><span class="tag-eneba">ENEBA</span> Configuración</div>
+            <div class="dashboard-grid">
+                <div class="card card-eneba">
+                    <h3>Estado Eneba</h3>
+                    <div id="statusEnebaDisplay" class="big-text">Cargando...</div>
+                    <div class="control-row"><button id="btnToggleEneba" class="btn btn-primary" style="background-color: #a855f7;">Cambiar Estado</button></div>
+                </div>
+                <div class="card card-eneba">
+                    <h3>Cupo Eneba (CLP)</h3>
+                    <div id="budgetEnebaDisplay" class="big-text">$...</div>
+                    <div class="control-row">
+                        <input type="number" id="newBudgetEneba" class="input-admin" placeholder="Nuevo monto">
+                        <button id="btnUpdateBudgetEneba" class="btn btn-primary" style="background-color: #a855f7;">Actualizar</button>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="section-header"><span class="tag-eneba">ENEBA</span> Gestión de Tienda</div>
-        <div class="dashboard-grid">
-            <div class="card card-eneba">
-                <h3>Estado Eneba</h3>
-                <div id="statusEnebaDisplay" class="big-text">Cargando...</div>
-                <div class="control-row"><button id="btnToggleEneba" class="btn btn-primary" style="background-color: #a855f7;">Cambiar Estado</button></div>
-            </div>
-            <div class="card card-eneba">
-                <h3>Cupo Eneba (CLP)</h3>
-                <div id="budgetEnebaDisplay" class="big-text">$...</div>
-                <div class="control-row">
-                    <input type="number" id="newBudgetEneba" class="input-admin" placeholder="Nuevo monto">
-                    <button id="btnUpdateBudgetEneba" class="btn btn-primary" style="background-color: #a855f7;">Actualizar</button>
+        <div id="tab-vip" class="tab-content">
+            <div class="card">
+                <h3>Gestión de Códigos VIP (Global)</h3>
+                <div class="vip-controls">
+                    <input type="text" id="vipCodeName" class="input-admin" placeholder="Código (Ej: VERANO2025)">
+                    <input type="number" id="vipDiscount" class="input-admin" placeholder="Descuento (0.10 a 0.90)" step="0.05" max="1">
+                    <button id="btnAddVip" class="btn btn-primary">Crear Código</button>
                 </div>
-            </div>
-        </div>
-
-        <hr style="border: 0; border-top: 1px solid var(--border); margin: 30px 0;">
-
-        <div class="card">
-            <h3>Gestión de Códigos VIP (Global)</h3>
-            <div class="vip-controls">
-                <input type="text" id="vipCodeName" class="input-admin" placeholder="Código (Ej: VERANO2025)">
-                <input type="number" id="vipDiscount" class="input-admin" placeholder="Descuento (0.10 a 0.90)" step="0.05" max="1">
-                <button id="btnAddVip" class="btn btn-primary">Crear Código</button>
-            </div>
-            <table class="admin-table">
-                <thead><tr><th>Código</th><th>Descuento</th><th>Acción</th></tr></thead>
-                <tbody id="vipList"></tbody>
-            </table>
-        </div>
-
-        <hr style="border: 0; border-top: 1px solid var(--border); margin: 30px 0;">
-
-        <div class="section-header" style="text-transform: uppercase; letter-spacing: 1px; color: var(--text-light); font-size: 0.9rem;">
-            Historial de Pedidos Recientes
-        </div>
-
-        <div class="card">
-            <h3>Gestión de Pedidos</h3>
-            
-            <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
-                <input type="text" id="searchInput" class="input-admin" placeholder="Buscar por Email, RUT o Juego...">
-                
-                <select id="filterStatus" class="input-admin" style="max-width: 150px;">
-                    <option value="todos">Todos</option>
-                    <option value="pendiente">⏳ Pendientes</option>
-                    <option value="completado">✅ Completados</option>
-                    <option value="cancelado">🚫 Cancelados</option>
-                </select>
-            </div>
-
-            <div style="overflow-x: auto;">
-                <table class="admin-table orders-table">
-                    <thead>
-                        <tr>
-                            <th>Fecha</th>
-                            <th>Email / Rut</th>
-                            <th>Juego / Plataforma</th>
-                            <th>Total Pagado</th>
-                            <th>Estado</th>
-                            <th>Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody id="ordersList">
-                        <tr><td colspan="6" style="text-align:center;">Cargando pedidos...</td></tr>
-                    </tbody>
+                <table class="admin-table">
+                    <thead><tr><th>Código</th><th>Descuento</th><th>Acción</th></tr></thead>
+                    <tbody id="vipList"></tbody>
                 </table>
             </div>
-        </div>   
+        </div>
+
+        <div id="tab-pedidos" class="tab-content">
+            <div class="section-header" style="text-transform: uppercase; letter-spacing: 1px; color: var(--text-light); font-size: 0.9rem;">
+                Historial de Pedidos Recientes
+            </div>
+            
+            <div class="card">
+                <h3>Gestión de Pedidos</h3>
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+                    <input type="text" id="searchInput" class="input-admin" placeholder="Buscar por Email, RUT o Juego...">
+                    
+                    <select id="filterStatus" class="input-admin" style="max-width: 150px;">
+                        <option value="todos">Todos</option>
+                        <option value="pendiente">⏳ Pendientes</option>
+                        <option value="completado">✅ Completados</option>
+                        <option value="cancelado">🚫 Cancelados</option>
+                    </select>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table class="admin-table orders-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Email / Rut</th>
+                                <th>Juego / Plataforma</th>
+                                <th>Total Pagado</th>
+                                <th>Estado</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersList">
+                            <tr><td colspan="6" style="text-align:center;">Cargando pedidos...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script type="module" src="../assets/js/admin.js"></script>
