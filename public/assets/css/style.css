@@ -372,6 +372,130 @@ div:where(.swal2-input) { color: var(--primary) !important; background: var(--bg
     fill: currentColor; /* El SVG tomará el color del texto */
 }
 
+/* =========================================
+   MEJORAS VISUALES (GLASSMORPHISM & GRADIENTES)
+   ========================================= */
+
+/* 1. NAVBAR DE CRISTAL REAL */
+.navbar {
+    background: rgba(255, 255, 255, 0.7) !important; /* Más transparente */
+    backdrop-filter: blur(12px) saturate(180%); /* Efecto vidrio premium */
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.5); /* Borde sutil brillante */
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03); /* Sombra muy suave */
+}
+
+/* 2. TARJETAS CON PROFUNDIDAD (GLASS SUTIL) */
+.step-card, 
+.budget-card, 
+.form-wrapper, 
+.stat-card, /* De perfil.css, pero aplica aquí si se carga style.css */
+.login-box {
+    background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05); /* Sombra difusa moderna */
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s;
+}
+
+/* Efecto Hover en tarjetas */
+.step-card:hover, .budget-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px -5px rgba(37, 99, 235, 0.15); /* Resplandor azulado */
+    border-color: rgba(37, 99, 235, 0.3);
+}
+
+/* 3. BOTONES CON GRADIENTES VIBRANTES */
+/* Botón Steam (Azul) */
+.btn-primary {
+    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); /* Glow azul */
+}
+.btn-primary:hover {
+    background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
+    transform: translateY(-1px);
+}
+
+/* Botón Eneba (Morado) */
+.btn-eneba {
+    background: linear-gradient(135deg, #9333ea 0%, #a855f7 100%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 15px rgba(147, 51, 234, 0.3); /* Glow morado */
+}
+.btn-eneba:hover {
+    background: linear-gradient(135deg, #7e22ce 0%, #9333ea 100%);
+    box-shadow: 0 6px 20px rgba(147, 51, 234, 0.5);
+    transform: translateY(-1px);
+}
+
+/* Botón Secundario (Gris con efecto) */
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(4px);
+    border: 1px solid var(--border);
+}
+
+/* 4. INPUTS MODERNOS */
+input, select {
+    background: rgba(248, 250, 252, 0.8); /* Fondo semi-transparente */
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+input:focus, select:focus {
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); /* Anillo de enfoque suave */
+    border-color: var(--accent);
+}
+
+/* 5. AJUSTES MODO OSCURO (DARK MODE) */
+body.dark-mode .navbar {
+    background: rgba(15, 23, 42, 0.75) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* --- ARREGLO BOTÓN SECUNDARIO EN MODO OSCURO --- */
+body.dark-mode .btn-secondary {
+    background: rgba(30, 41, 59, 0.7); /* Fondo oscuro translúcido */
+    border-color: rgba(255, 255, 255, 0.1); /* Borde sutil */
+    color: var(--text-main); /* Texto claro (se hereda de la variable) */
+    backdrop-filter: blur(4px); /* Mantiene el efecto glass */
+}
+
+body.dark-mode .btn-secondary:hover {
+    background: rgba(30, 41, 59, 0.9); /* Más opaco al pasar el mouse */
+    border-color: var(--accent); /* Borde del color de acento (azul/morado) */
+}
+
+body.dark-mode .step-card, 
+body.dark-mode .budget-card, 
+body.dark-mode .form-wrapper,
+body.dark-mode .stat-card,
+body.dark-mode .login-box {
+    background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%); /* Gradiente oscuro */
+    border: 1px solid rgba(255, 255, 255, 0.05); /* Borde sutil luz */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode input, 
+body.dark-mode select {
+    background: rgba(30, 41, 59, 0.6);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-main);
+}
+body.dark-mode input:focus {
+    background: rgba(30, 41, 59, 1);
+    border-color: var(--accent);
+}
+
+/* Hero Texto Gradiente (Opcional, hace que el título resalte) */
+.hero h1 .highlight {
+    background: linear-gradient(to right, #2563eb, #60a5fa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: var(--accent); /* Fallback */
+}
+
 
 /* --- LÓGICA RESPONSIVE DE LA LUPA --- */
 /* Esta regla aplica SOLO si la pantalla es de PC (mayor a 768px) */
