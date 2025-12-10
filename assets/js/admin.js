@@ -1,3 +1,4 @@
+/* ARCHIVO: assets/js/admin.js */
 import { ref, onValue, set, update, remove, child, get, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { db, auth, provider, initTheme } from './config.js';
@@ -141,8 +142,8 @@ function iniciarListeners() {
         }
         
         renderizarTabla();
-        actualizarKPIs();     // <--- NUEVO
-        actualizarGraficos(); // <--- NUEVO
+        actualizarKPIs();     
+        actualizarGraficos(); 
     });
 
     function renderizarTabla() {
@@ -209,19 +210,20 @@ function iniciarListeners() {
 
     // --- LÓGICA DE GRÁFICOS Y KPIs ---
     function actualizarKPIs() {
-        // Filtramos solo completados para dinero real
-        const completados = todasLasOrdenes.filter(o => o.estado === 'completado');
+        // [Filtro Clave] Solo las órdenes completadas cuentan como ventas y pedidos
+        const ordenesCompletadas = todasLasOrdenes.filter(o => o.estado === 'completado');
         const pendientes = todasLasOrdenes.filter(o => o.estado === 'pendiente');
 
-        const totalVentas = completados.reduce((acc, curr) => acc + (parseInt(curr.precio_pagado) || 0), 0);
+        const totalVentas = ordenesCompletadas.reduce((acc, curr) => acc + (parseInt(curr.precio_pagado) || 0), 0);
         
         document.getElementById('kpiTotalVentas').innerText = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(totalVentas);
-        document.getElementById('kpiTotalPedidos').innerText = completados.length;
+        document.getElementById('kpiTotalPedidos').innerText = ordenesCompletadas.length;
         document.getElementById('kpiPendientes').innerText = pendientes.length;
     }
 
     function actualizarGraficos() {
-        const completados = todasLasOrdenes.filter(o => o.estado === 'completado');
+        // [Filtro Clave] Solo las órdenes COMPLETADAS
+        const ordenesCompletadas = todasLasOrdenes.filter(o => o.estado === 'completado');
 
         // 1. Gráfico Ventas Semanales
         const diasSemana = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
@@ -229,21 +231,18 @@ function iniciarListeners() {
         const hoy = new Date();
         const etiquetasDias = [];
 
-        // Generar etiquetas de los últimos 7 días
         for (let i = 6; i >= 0; i--) {
             const d = new Date(hoy);
             d.setDate(d.getDate() - i);
             etiquetasDias.push(diasSemana[d.getDay()]);
         }
 
-        completados.forEach(orden => {
+        ordenesCompletadas.forEach(orden => {
             const fechaOrden = new Date(orden.fecha);
             const diffTime = Math.abs(hoy - fechaOrden);
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
             
             if (diffDays <= 7) {
-                // Encontrar el índice correcto en nuestro array de 7 días
-                // Lógica simple: si es hoy es index 6, ayer index 5...
                 const index = 6 - (Math.floor((hoy - fechaOrden) / (1000 * 60 * 60 * 24)));
                 if(index >= 0 && index <= 6) {
                     ventasPorDia[index] += parseInt(orden.precio_pagado) || 0;
@@ -274,13 +273,20 @@ function iniciarListeners() {
             });
         }
 
-        // 2. Gráfico Plataformas
+        // 2. Gráfico Plataformas (CORREGIDO)
         let steamCount = 0;
         let enebaCount = 0;
         
-        completados.forEach(orden => {
-            if(orden.plataforma === 'Steam') steamCount++;
-            else enebaCount++;
+        ordenesCompletadas.forEach(orden => { 
+            // Normalizamos a minúsculas para evitar errores de "Steam" vs "steam"
+            const plat = (orden.plataforma || '').toLowerCase();
+            
+            if (plat.includes('steam')) {
+                steamCount++;
+            } else if (plat.includes('eneba')) {
+                enebaCount++;
+            }
+            // Si no es ninguno (pedidos viejos corruptos), los ignoramos
         });
 
         const ctxPlatform = document.getElementById('platformChart');
