@@ -27,7 +27,6 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
-<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-EMVPQGPWTE"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -60,7 +59,7 @@
 
     <header class="hero">
         <div class="container">
-            <h1>Keys de <span class="highlight" style="color:#a855f7;">Eneba</span>,<br> con descuento extra.</h1>
+            <h1>Keys de <span class="highlight" style="background: linear-gradient(to right, #9333ea, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Eneba</span>,<br> con descuento extra.</h1>
             <p class="subtitle">Compra keys globales o regionales en Eneba a través de nosotros y ahorra aún más.</p>
         </div>
     </header>
@@ -111,60 +110,86 @@
     <section id="pedido" class="section-form">
         <div class="container">
             <div class="form-wrapper">
-                <div class="form-header">
-                    <h3>Cotizar Eneba</h3>
-                    <p>Ingresa el precio que ves en Eneba para calcular tu total.</p>
-                </div>
                 
+                <div class="wizard-indicators" style="padding-top: 30px;">
+                    <div class="step-indicator active" data-step="1">1</div>
+                    <div class="step-line"></div>
+                    <div class="step-indicator" data-step="2">2</div>
+                    <div class="step-line"></div>
+                    <div class="step-indicator" data-step="3">3</div>
+                </div>
+
                 <form id="gameForm">
-                    <div class="input-group">
-                        <label for="steamUrlInput">Link del Juego en Eneba</label>
-                        <input type="url" id="steamUrlInput" placeholder="https://www.eneba.com/latam/..." required>
-                    </div>
+                    
+                    <div class="wizard-step active" id="step-1">
+                        <div class="form-header-step">
+                            <h4>Paso 1: Cotiza tu Key</h4>
+                        </div>
 
-                    <div class="divider"></div>
-                    <div class="grid-2">
-                        <div class="input-group"><label>Tu Email</label><input type="email" name="email" id="email" required placeholder="email@ejemplo.com"></div>
-                        <div class="input-group"><label>Nombre Completo</label><input type="text" name="nombre" id="nombre" required placeholder="Ej. Juan Pérez"></div>
-                    </div>
-
-                    <div class="grid-2">
-                        <div class="input-group"><label>RUT</label><input type="text" name="rut" id="rut" required placeholder="12.345.678-9"></div>
-                        <div class="input-group"><label>Usuario Eneba/Otro (Opcional)</label><input type="text" name="steam_user" id="steam_user" placeholder="N/A"></div>
-                    </div>
-
-                    <div class="input-group"><label>Detalles (Región de la Key, etc)</label><input type="text" name="detalles" id="detalles" placeholder="Ej: Key Global, Key Latam..."></div>
-                    <div class="divider"></div>
-
-                    <div class="input-group"><label>Nombre del Juego / Producto</label><input type="text" name="juego" id="juego" required placeholder="Ej. FIFA 24 Key Global"></div>
-
-                    <div class="grid-2">
                         <div class="input-group">
-                            <label>Precio en Eneba (CLP)</label>
-                            <input type="number" id="precioSteam" name="precio_original" required placeholder="Ingresa el precio exacto" min="1" step="1">
+                            <label for="steamUrlInput">Link del Juego en Eneba</label>
+                            <input type="url" id="steamUrlInput" placeholder="https://www.eneba.com/latam/..." required>
                         </div>
-                        <div class="input-group">
-                            <label>Código Promocional</label>
-                            <input type="text" id="codigoInvitado" name="codigo_invitado" placeholder="Código VIP (Opcional)">
+
+                        <div class="input-group"><label>Nombre del Juego / Producto</label><input type="text" name="juego" id="juego" required placeholder="Ej. FIFA 24 Key Global"></div>
+
+                        <div class="grid-2">
+                            <div class="input-group">
+                                <label>Precio en Eneba (CLP)</label>
+                                <input type="number" id="precioSteam" name="precio_original" required placeholder="Ingresa el precio exacto" min="1" step="1">
+                            </div>
+                            <div class="input-group">
+                                <label>Código Promocional</label>
+                                <input type="text" id="codigoInvitado" name="codigo_invitado" placeholder="Código VIP (Opcional)">
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-secondary btn-calc" id="btnCalcular" style="margin-bottom: 20px;">Calcular Precio Final</button>
+
+                        <div id="resultado" class="result-container" style="display:none; margin-bottom: 20px;">
+                            <div class="result-pricing">
+                                <div class="price-row"><span>Precio Eneba:</span><span id="res-original" class="strikethrough">$0</span></div>
+                                <div class="price-row savings text-eneba"><span>¡Te Ahorras!:</span><span id="res-ahorro">$0</span></div>
+                                <div class="price-row final"><span>A Pagar:</span><span id="res-final" style="color: #a855f7;">$0</span></div>
+                                <p id="alerta-presupuesto" class="alert-badge hidden">⚠️ Supera el cupo disponible</p>
+                            </div>
+                        </div>
+
+                        <div class="step-actions right">
+                            <button type="button" class="btn btn-primary btn-eneba" onclick="window.nextStep(2)">Siguiente: Mis Datos &rarr;</button>
                         </div>
                     </div>
 
-                    <input type="hidden" name="precio_final_descuento" id="precioFinalInput">
-                    <input type="hidden" name="to_name" value="Admin Eneba">
-                    <input type="hidden" name="plataforma_origen" value="Eneba">
-
-                    <div id="resultado" class="result-container">
-                        <div class="result-pricing">
-                            <div class="price-row"><span>Precio Eneba:</span><span id="res-original" class="strikethrough">$0</span></div>
-                            
-                            <div class="price-row savings text-eneba"><span>¡Te Ahorras!:</span><span id="res-ahorro">$0</span></div>
-
-                            <div class="price-row final"><span>A Pagar:</span><span id="res-final" style="color: #a855f7;">$0</span></div>
-                            <p id="alerta-presupuesto" class="alert-badge hidden">⚠️ Supera el cupo disponible</p>
+                    <div class="wizard-step" id="step-2">
+                        <div class="form-header-step">
+                            <h4>Paso 2: Tus Datos</h4>
                         </div>
 
-                        <div class="bank-details">
-                            <h4>Datos para Transferencia</h4>
+                        <div class="grid-2">
+                            <div class="input-group"><label>Tu Email</label><input type="email" name="email" id="email" required placeholder="email@ejemplo.com"></div>
+                            <div class="input-group"><label>Nombre Completo</label><input type="text" name="nombre" id="nombre" required placeholder="Ej. Juan Pérez"></div>
+                        </div>
+
+                        <div class="grid-2">
+                            <div class="input-group"><label>RUT</label><input type="text" name="rut" id="rut" required placeholder="12.345.678-9"></div>
+                            <div class="input-group"><label>Usuario Eneba/Otro (Opcional)</label><input type="text" name="steam_user" id="steam_user" placeholder="N/A"></div>
+                        </div>
+
+                        <div class="input-group"><label>Detalles (Región de la Key, etc)</label><input type="text" name="detalles" id="detalles" placeholder="Ej: Key Global, Key Latam..."></div>
+
+                        <div class="step-actions">
+                            <button type="button" class="btn btn-secondary" onclick="window.prevStep(1)">&larr; Atrás</button>
+                            <button type="button" class="btn btn-primary btn-eneba" onclick="window.nextStep(3)">Siguiente: Pagar &rarr;</button>
+                        </div>
+                    </div>
+
+                    <div class="wizard-step" id="step-3">
+                        <div class="form-header-step">
+                            <h4>Paso 3: Transferencia y Confirmación</h4>
+                        </div>
+
+                        <div class="bank-details" style="background: rgba(0,0,0,0.02); padding: 15px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 20px;">
+                            <h4 style="margin-top:0;">Datos para Transferencia</h4>
                             <ul>
                                 <li><strong>Banco:</strong> Banco Estado (Cuenta RUT)</li>
                                 <li><strong>Titular:</strong> Tomás Benjamin Alvarez</li>
@@ -172,20 +197,24 @@
                                 <li><strong>N° Cuenta:</strong> 22566397</li>
                                 <li><strong>Email:</strong> tomas07wilson@gmail.com</li>
                             </ul>
-                            
-                            <div class="file-eneba"> 
-                                <div class="upload-box">
-                                    <label for="comprobanteInput">Adjuntar Comprobante (Imagen)</label>
-                                    <input type="file" id="comprobanteInput" class="custom-file-input" accept="image/*">
-                                    <span class="small-text">* Requerido para procesar la compra.</span>
-                                </div>
+                        </div>
+
+                        <div class="file-eneba"> 
+                            <div class="upload-box">
+                                <label for="comprobanteInput">Adjuntar Comprobante (Imagen)</label>
+                                <input type="file" id="comprobanteInput" class="custom-file-input" accept="image/*">
+                                <div id="previewComprobanteContainer" style="margin-top: 10px;"></div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-secondary btn-calc" id="btnCalcular">Calcular Precio</button>
-                        <button type="submit" class="btn btn-eneba btn-send" id="btnEnviar" disabled>Enviar Pedido Eneba</button>
+                        <input type="hidden" name="precio_final_descuento" id="precioFinalInput">
+                        <input type="hidden" name="to_name" value="Admin Eneba">
+                        <input type="hidden" name="plataforma_origen" value="Eneba">
+
+                        <div class="step-actions">
+                            <button type="button" class="btn btn-secondary" onclick="window.prevStep(2)">&larr; Atrás</button>
+                            <button type="submit" class="btn btn-eneba btn-send" id="btnEnviar" disabled>Enviar Pedido Eneba</button>
+                        </div>
                     </div>
                 </form>
             </div>

@@ -9,48 +9,23 @@ initImageZoom();
 
 /* --- FUNCIÓN AUXILIAR: CONFETI --- */
 function lanzarConfeti() {
-    // Verificamos si la librería cargó correctamente
     if (!window.confetti) return;
-
-    // Duración de la animación: 2 segundos
     var end = Date.now() + (2 * 1000);
-
-    // Colores: Azul (Steam), Morado (Eneba), Blanco
     var colors = ['#2563eb', '#a855f7', '#ffffff'];
 
     (function frame() {
-        confetti({
-            particleCount: 3,
-            angle: 60,
-            spread: 55,
-            origin: { x: 0 }, // Desde la izquierda
-            colors: colors
-        });
-        confetti({
-            particleCount: 3,
-            angle: 120,
-            spread: 55,
-            origin: { x: 1 }, // Desde la derecha
-            colors: colors
-        });
-
-        if (Date.now() < end) {
-            requestAnimationFrame(frame);
-        }
+        confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 }, colors: colors });
+        confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 }, colors: colors });
+        if (Date.now() < end) requestAnimationFrame(frame);
     }());
 }
 
 /* --- LÓGICA PRINCIPAL DE LA TIENDA --- */
 export function initStorePage(config) {
-    const { 
-        platformName,       // "Steam" o "Eneba"
-        budgetRefString,    // "presupuesto_steam" o "presupuesto_eneba"
-        statusRefString     // "estado_steam" o "estado_eneba"
-    } = config;
+    const { platformName, budgetRefString, statusRefString } = config;
 
     const saldoRef = ref(db, budgetRefString);
     const estadoRef = ref(db, statusRefString);
-
     const SERVICE_ID = 'service_jke4epd';    
     const TEMPLATE_ID = 'template_0l9w69b'; 
 
@@ -62,19 +37,18 @@ export function initStorePage(config) {
     const btnCalc = document.querySelector('.btn-calc'); 
     const inputComprobante = document.getElementById('comprobanteInput');
     const inputRut = document.getElementById('rut');
-    const inputPrecio = document.getElementById('precioSteam'); // Nota: Tu HTML de Eneba usa este mismo ID
+    const inputPrecio = document.getElementById('precioSteam');
 
     let rutEsValido = false;
 
-    // --- 1. LISTENERS BÁSICOS ---
+    // --- INICIALIZAR EL WIZARD (NUEVO) ---
+    initWizard(); 
+
+    // --- LISTENERS BÁSICOS ---
     if(btnCalc) { btnCalc.addEventListener('click', calcularDescuento); }
-
     if(inputRut) { 
-        configurarValidacionRut(inputRut, (estado) => {
-            rutEsValido = estado;
-        });
+        configurarValidacionRut(inputRut, (estado) => { rutEsValido = estado; });
     }
-
     if(inputPrecio) {
         inputPrecio.addEventListener('input', function() {
             if (this.value.startsWith('0') && this.value.length > 1) this.value = this.value.substring(1);
@@ -84,7 +58,7 @@ export function initStorePage(config) {
 
     const formatoDinero = (valor) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(valor);
 
-    // --- 2. FIREBASE LISTENERS (PRESUPUESTO Y ESTADO) ---
+    // --- FIREBASE LISTENERS ---
     onValue(saldoRef, (snapshot) => {
         const data = snapshot.val();
         presupuestoActual = data || 0;
@@ -109,37 +83,29 @@ export function initStorePage(config) {
         }
     });
 
-    // --- 3. LOGICA DE AUTH (AUTOCOMPLETAR) ---
+    // --- AUTH ---
     onAuthStateChanged(auth, (user) => {
         if (user) {
             const emailInput = document.getElementById('email');
             if (emailInput && !emailInput.value) emailInput.value = user.email;
-
-            const userRef = ref(db, 'usuarios/' + user.uid);
-            get(userRef).then((snapshot) => {
+            get(ref(db, 'usuarios/' + user.uid)).then((snapshot) => {
                 if (snapshot.exists()) {
                     const data = snapshot.val();
-                    
                     const nombreInput = document.getElementById('nombre');
                     if (nombreInput && data.nombre) nombreInput.value = data.nombre;
-
                     const rutInput = document.getElementById('rut');
                     if (rutInput && data.rut) {
                         rutInput.value = data.rut;
                         rutInput.dispatchEvent(new Event('input')); 
                     }
-
                     const steamInput = document.getElementById('steam_user');
                     if (steamInput && data.steam_user) steamInput.value = data.steam_user;
-                    
-                    const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
-                    Toast.fire({ icon: 'info', title: 'Datos cargados de tu perfil' });
                 }
             });
         }
     });
 
-    // --- 4. CÁLCULO DE DESCUENTO ---
+    // --- CÁLCULO ---
     function calcularDescuento() {
         if (!tiendaAbierta) return;
         const precioVal = inputPrecio.value;
@@ -183,9 +149,7 @@ export function initStorePage(config) {
     function mostrarResultadosUI(precioOriginal, precioFinal, esVip, descuentoValor = 0.30) {
         const resultadoDiv = document.getElementById('resultado');
         resultadoDiv.style.display = 'block'; 
-        const msjComprobante = document.getElementById('mensaje-comprobante');
-        if(msjComprobante) msjComprobante.style.display = 'none';
-
+        
         document.getElementById('res-original').innerText = formatoDinero(precioOriginal);
         const ahorro = precioOriginal - precioFinal;
         document.getElementById('res-ahorro').innerText = formatoDinero(ahorro);
@@ -211,7 +175,7 @@ export function initStorePage(config) {
         }
     }
 
-    // --- 5. SUBMIT DEL FORMULARIO ---
+    // --- SUBMIT ---
     if(form) {
         form.addEventListener('submit', async function(event) {
             event.preventDefault(); 
@@ -222,52 +186,33 @@ export function initStorePage(config) {
                 if(inputRut) inputRut.focus();
                 return;
             }
-
             if (!inputComprobante.files || inputComprobante.files.length === 0) {
                 Swal.fire('Falta el Comprobante', 'Por favor adjunta la captura de la transferencia.', 'warning');
                 return;
             }
 
-            // Validar montos de UI para seguridad básica
             const precioOriginalStr = document.getElementById('res-original').innerText;
             const costoOriginal = parseInt(precioOriginalStr.replace(/\D/g, '')); 
             const precioClienteStr = document.getElementById('res-final').innerText;
             const costoCliente = parseInt(precioClienteStr.replace(/\D/g, ''));
 
-            if (costoOriginal <= 100 || costoCliente <= 0) {
-                Swal.fire('Error de Datos', 'Los montos no son válidos. Recarga e intenta de nuevo.', 'error');
-                return;
-            }
-
-            Swal.fire({ 
-                title: 'Procesando Pedido', 
-                html: 'Iniciando sistema...', 
-                allowOutsideClick: false,
-                didOpen: () => Swal.showLoading() 
-            });
-
-            const updateStatus = (texto) => {
-                if(Swal.getHtmlContainer()) Swal.getHtmlContainer().textContent = texto;
-            };
+            Swal.fire({ title: 'Procesando Pedido', html: 'Iniciando sistema...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            const updateStatus = (texto) => { if(Swal.getHtmlContainer()) Swal.getHtmlContainer().textContent = texto; };
 
             try {
-                // 1. IMAGEN
                 updateStatus('1/4 Optimizando imagen...');
                 const comprobanteBase64 = await comprimirImagen(inputComprobante.files[0]);
 
-                // 2. VERIFICACIÓN CUPO
-                updateStatus('2/4 Verificando cupo disponible...');
-                
+                updateStatus('2/4 Verificando cupo...');
                 runTransaction(saldoRef, (saldoActual) => {
                     const actual = saldoActual || 0;
                     if (actual >= costoOriginal) return actual - costoOriginal; 
                     else return; 
                 }).then((result) => {
                     if (result.committed) {
-                        // 3. GUARDAR DB
                         updateStatus('3/4 Guardando tu pedido...');
                         const user = auth.currentUser; 
-                        const coverImgSrc = document.getElementById('gameCover')?.src || ''; // Solo si existe (Steam)
+                        const coverImgSrc = document.getElementById('gameCover')?.src || '';
 
                         const nuevaOrdenRef = push(ref(db, 'ordenes'));
                         set(nuevaOrdenRef, {
@@ -276,42 +221,29 @@ export function initStorePage(config) {
                             rut: form.rut.value, 
                             juego: form.juego.value,
                             precio_pagado: costoCliente,
-                            precio_steam: costoOriginal, // Se guarda como precio_steam por compatibilidad legacy
+                            precio_steam: costoOriginal, 
                             estado: 'pendiente',
-                            plataforma: platformName, // "Steam" o "Eneba"
+                            plataforma: platformName, 
                             comprobante_img: comprobanteBase64,
                             imagen_juego: coverImgSrc,
                             uid: user ? user.uid : null 
                         });
 
-                        // 4. EMAIL
                         updateStatus('4/4 Enviando confirmación...');
                         emailjs.sendForm(SERVICE_ID, TEMPLATE_ID, form).then(() => {
-                            
-                            // === ÉXITO: DISPARAR CONFETI Y ALERTA ===
                             lanzarConfeti();
-
-                            Swal.fire({
-                                icon: 'success',
-                                title: '¡Pedido Recibido!',
-                                text: 'Hemos recibido tu comprobante y pedido. Te contactaremos pronto.',
-                                confirmButtonText: 'Entendido',
-                                confirmButtonColor: platformName === 'Steam' ? '#2563eb' : '#a855f7'
-                            });
-
-                            // LIMPIEZA
+                            Swal.fire({ icon: 'success', title: '¡Pedido Recibido!', text: 'Hemos recibido tu comprobante y pedido.', confirmButtonText: 'Entendido' });
                             form.reset();
                             rutEsValido = false; 
-                            if(inputRut) {
-                                inputRut.style.borderColor = "var(--border)";
-                                inputRut.style.boxShadow = "none";
-                            }
-                            
+                            if(inputRut) { inputRut.style.borderColor = "var(--border)"; inputRut.style.boxShadow = "none"; }
                             const previewContainer = document.getElementById('previewContainer');
                             if(previewContainer) previewContainer.style.display = 'none';
-                            
+                            const previewComp = document.getElementById('previewComprobanteContainer');
+                            if(previewComp) previewComp.innerHTML = '';
                             document.getElementById('resultado').style.display = 'none';
-                            btnEnviar.disabled = true;
+                            
+                            // Resetear Wizard
+                            window.showStep(1); 
                         });
                     } else {
                         Swal.fire('Lo sentimos', `Cupo de ${platformName} agotado en este instante.`, 'error');
@@ -320,6 +252,86 @@ export function initStorePage(config) {
             } catch (err) {
                 console.error(err);
                 Swal.fire('Error', 'Ocurrió un error al procesar la solicitud.', 'error');
+            }
+        });
+    }
+}
+
+/* --- LÓGICA DEL WIZARD (REUTILIZABLE) --- */
+function initWizard() {
+    let currentStep = 1;
+
+    // Se asignan funciones al objeto window para poder usarlas en el HTML (onclick="window.nextStep(2)")
+    window.showStep = (stepNumber) => {
+        document.querySelectorAll('.wizard-step').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.step-indicator').forEach(el => el.classList.remove('active'));
+        
+        const stepToShow = document.getElementById(`step-${stepNumber}`);
+        if(stepToShow) stepToShow.classList.add('active');
+
+        for(let i = 1; i <= stepNumber; i++) {
+            const ind = document.querySelector(`.step-indicator[data-step="${i}"]`);
+            if(ind) ind.classList.add('active');
+        }
+        currentStep = stepNumber;
+    };
+
+    window.nextStep = (targetStep) => {
+        // Validaciones Paso 1
+        if (currentStep === 1 && targetStep === 2) {
+            const precio = document.getElementById('res-final').innerText;
+            const inputJuego = document.getElementById('juego').value;
+            // Verifica si el resultado está visible (calculado)
+            if (precio === '$0' || document.getElementById('resultado').style.display === 'none') {
+                Swal.fire('¡Espera!', 'Primero debes calcular el precio.', 'warning');
+                return;
+            }
+            if (!inputJuego) {
+                Swal.fire('Falta el nombre', 'Ingresa el nombre del juego.', 'warning');
+                return;
+            }
+        }
+        // Validaciones Paso 2
+        if (currentStep === 2 && targetStep === 3) {
+            const email = document.getElementById('email').value;
+            const nombre = document.getElementById('nombre').value;
+            const rut = document.getElementById('rut').value;
+            if (!email || !nombre || !rut) {
+                Swal.fire('Faltan datos', 'Completa tus datos personales.', 'warning');
+                return;
+            }
+        }
+        window.showStep(targetStep);
+    };
+
+    window.prevStep = (targetStep) => {
+        window.showStep(targetStep);
+    };
+
+    // Preview de Comprobante (Paso 3)
+    const fileInput = document.getElementById('comprobanteInput');
+    if(fileInput) {
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const container = document.getElementById('previewComprobanteContainer');
+            if(container) container.innerHTML = ''; 
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    const img = document.createElement('img');
+                    img.src = evt.target.result;
+                    img.style.maxWidth = '100%';
+                    img.style.maxHeight = '150px';
+                    img.style.borderRadius = '8px';
+                    img.style.border = '1px solid var(--border)';
+                    img.style.marginTop = '10px';
+                    if(container) container.appendChild(img);
+                    
+                    const btnEnviar = document.getElementById('btnEnviar');
+                    if(btnEnviar) btnEnviar.disabled = false;
+                }
+                reader.readAsDataURL(file);
             }
         });
     }

@@ -29,7 +29,6 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
-<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-EMVPQGPWTE"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -83,7 +82,7 @@
                         <img src="assets/img/Paso_2_steam.png" alt="Pegar URL en el buscador" class="step-image">
                     </div>
                     <h3>2. Pega el Link</h3>
-                    <p>Pega el enlace en nuestro buscador (abajo) y presiona la lupa <span style="color:white; padding:2px 6px; border-radius:4px; font-size:0.8em;">🔍</span>.</p>
+                    <p>Pega el enlace en nuestro buscador (abajo) y presiona la lupa <span style="background:var(--accent); color:white; padding:2px 6px; border-radius:4px; font-size:0.8em;">🔍</span>.</p>
                 </div>
                 <div class="step-card">
                     <div class="step-image-container">
@@ -128,66 +127,94 @@
     <section id="pedido" class="section-form">
         <div class="container">
             <div class="form-wrapper">
-                <div class="form-header">
-                    <h3>Cotizar Steam</h3>
-                    <p>Completa los datos para calcular tu descuento.</p>
-                </div>
                 
-                <form id="gameForm">
-                    <div class="input-group" style="position: relative;">
-                        <label for="steamUrlInput">Pegar Link de Steam (Autocompletar)</label>
-                        <div style="display: flex; gap: 10px;">
-                            <input type="url" id="steamUrlInput" placeholder="https://store.steampowered.com/app/...">
-                            <button type="button" id="btnBuscarSteam" class="btn btn-primary" style="width: auto; padding: 0 15px;" title="Buscar datos">🔍</button>
+                <div class="wizard-indicators" style="padding-top: 30px;">
+                    <div class="step-indicator active" data-step="1">1</div>
+                    <div class="step-line"></div>
+                    <div class="step-indicator" data-step="2">2</div>
+                    <div class="step-line"></div>
+                    <div class="step-indicator" data-step="3">3</div>
+                </div>
+
+                <form id="gameForm"> 
+                    
+                    <div class="wizard-step active" id="step-1">
+                        <div class="form-header-step">
+                            <h4>Paso 1: Cotiza tu Juego</h4>
+                        </div>
+
+                        <div class="input-group" style="position: relative;">
+                            <label for="steamUrlInput">Pegar Link de Steam (Autocompletar)</label>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="url" id="steamUrlInput" placeholder="https://store.steampowered.com/app/...">
+                                <button type="button" id="btnBuscarSteam" class="btn btn-primary" style="width: auto; padding: 0 15px;" title="Buscar datos">🔍</button>
+                            </div>
+                            
+                            <div id="previewContainer" class="game-preview-box">
+                                <div id="gamePreviewBg" class="game-preview-bg"></div>
+                                <img id="gameCover" src="" alt="Portada del Juego">
+                            </div>
+                        </div>
+
+                        <div class="input-group"><label>Nombre del Juego</label><input type="text" name="juego" id="juego" required placeholder="Ej. Elden Ring"></div>
+
+                        <div class="grid-2">
+                            <div class="input-group">
+                                <label>Precio Original (Steam)</label>
+                                <input type="number" id="precioSteam" name="precio_original" required placeholder="Precio sin descuento" min="1" step="1">
+                            </div>
+                            <div class="input-group">
+                                <label>Código Promocional</label>
+                                <input type="text" id="codigoInvitado" name="codigo_invitado" placeholder="Código VIP (Opcional)">
+                            </div>
                         </div>
                         
-                        <div id="previewContainer" class="game-preview-box">
-                            <div id="gamePreviewBg" class="game-preview-bg"></div>
-                            
-                            <img id="gameCover" src="" alt="Portada del Juego">
+                        <button type="button" class="btn btn-secondary btn-calc" id="btnCalcular" style="margin-bottom: 20px;">Calcular Precio Final</button>
+
+                        <div id="resultado" class="result-container" style="display:none; margin-bottom: 20px;">
+                            <div class="result-pricing">
+                                <div class="price-row"><span>Precio Steam:</span><span id="res-original" class="strikethrough">$0</span></div>
+                                <div class="price-row savings text-steam"><span>¡Te Ahorras!:</span><span id="res-ahorro">$0</span></div>
+                                <div class="price-row final"><span>A Pagar:</span><span id="res-final">$0</span></div>
+                                <p id="alerta-presupuesto" class="alert-badge hidden">⚠️ Supera el cupo disponible</p>
+                            </div>
+                        </div>
+
+                        <div class="step-actions right">
+                            <button type="button" class="btn btn-primary" onclick="window.nextStep(2)">Siguiente: Mis Datos &rarr;</button>
                         </div>
                     </div>
 
-                    <div class="divider"></div>
-                    <div class="grid-2">
-                        <div class="input-group"><label>Tu Email</label><input type="email" name="email" id="email" required placeholder="email@ejemplo.com"></div>
-                        <div class="input-group"><label>Nombre Completo</label><input type="text" name="nombre" id="nombre" required placeholder="Ej. Juan Pérez"></div>
-                    </div>
-
-                    <div class="grid-2">
-                        <div class="input-group"><label>RUT</label><input type="text" name="rut" id="rut" required placeholder="12.345.678-9"></div>
-                        <div class="input-group"><label>Usuario Steam (Opcional)</label><input type="text" name="steam_user" id="steam_user" placeholder="ID o URL perfil"></div>
-                    </div>
-
-                    <div class="input-group"><label>Detalles (Opcional)</label><input type="text" name="detalles" id="detalles" placeholder="Ej. Edición Deluxe"></div>
-                    <div class="divider"></div>
-
-                    <div class="input-group"><label>Nombre del Juego</label><input type="text" name="juego" id="juego" required placeholder="Ej. Elden Ring"></div>
-
-                    <div class="grid-2">
-                        <div class="input-group">
-                            <label>Precio Original (Steam)</label>
-                            <input type="number" id="precioSteam" name="precio_original" required placeholder="Precio sin descuento" min="1" step="1">
+                    <div class="wizard-step" id="step-2">
+                        <div class="form-header-step">
+                            <h4>Paso 2: Tus Datos</h4>
                         </div>
-                        <div class="input-group">
-                            <label>Código Promocional</label>
-                            <input type="text" id="codigoInvitado" name="codigo_invitado" placeholder="Código VIP (Opcional)">
+
+                        <div class="grid-2">
+                            <div class="input-group"><label>Tu Email</label><input type="email" name="email" id="email" required placeholder="email@ejemplo.com"></div>
+                            <div class="input-group"><label>Nombre Completo</label><input type="text" name="nombre" id="nombre" required placeholder="Ej. Juan Pérez"></div>
+                        </div>
+
+                        <div class="grid-2">
+                            <div class="input-group"><label>RUT</label><input type="text" name="rut" id="rut" required placeholder="12.345.678-9"></div>
+                            <div class="input-group"><label>Usuario Steam (Opcional)</label><input type="text" name="steam_user" id="steam_user" placeholder="ID o URL perfil"></div>
+                        </div>
+                        
+                        <div class="input-group"><label>Detalles (Opcional)</label><input type="text" name="detalles" id="detalles" placeholder="Ej. Edición Deluxe"></div>
+
+                        <div class="step-actions">
+                            <button type="button" class="btn btn-secondary" onclick="window.prevStep(1)">&larr; Atrás</button>
+                            <button type="button" class="btn btn-primary" onclick="window.nextStep(3)">Siguiente: Pagar &rarr;</button>
                         </div>
                     </div>
 
-                    <input type="hidden" name="precio_final_descuento" id="precioFinalInput">
-                    <input type="hidden" name="to_name" value="Admin Steam">
-                    <input type="hidden" name="plataforma_origen" value="Steam">
-
-                    <div id="resultado" class="result-container">
-                        <div class="result-pricing">
-                            <div class="price-row"><span>Precio Steam:</span><span id="res-original" class="strikethrough">$0</span></div>
-                            <div class="price-row savings text-steam"><span>¡Te Ahorras!:</span><span id="res-ahorro">$0</span></div>
-                            <div class="price-row final"><span>A Pagar:</span><span id="res-final">$0</span></div>
-                            <p id="alerta-presupuesto" class="alert-badge hidden">⚠️ Supera el cupo disponible</p>
+                    <div class="wizard-step" id="step-3">
+                        <div class="form-header-step">
+                            <h4>Paso 3: Transferencia y Confirmación</h4>
                         </div>
-                        <div class="bank-details">
-                            <h4>Datos para Transferencia</h4>
+
+                        <div class="bank-details" style="background: rgba(0,0,0,0.02); padding: 15px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 20px;">
+                            <h4 style="margin-top:0;">Datos para Transferencia</h4>
                             <ul>
                                 <li><strong>Banco:</strong> Banco Estado (Cuenta RUT)</li>
                                 <li><strong>Titular:</strong> Tomás Benjamin Alvarez</li>
@@ -195,21 +222,24 @@
                                 <li><strong>N° Cuenta:</strong> 22566397</li>
                                 <li><strong>Email:</strong> tomas07wilson@gmail.com</li>
                             </ul>
-                            
-                            <div class="file-steam"> 
-                                <div class="upload-box">
-                                    <label for="comprobanteInput">Adjuntar Comprobante (Imagen)</label>
-                                    <input type="file" id="comprobanteInput" class="custom-file-input" accept="image/*">
-                                    <span class="small-text">* Requerido para procesar la compra.</span>
-                                </div>
-                            </div>
-
                         </div>
-                    </div>
 
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-secondary btn-calc" id="btnCalcular">Calcular Precio</button>
-                        <button type="submit" class="btn btn-primary btn-send" id="btnEnviar" disabled>Enviar Pedido</button>
+                        <div class="file-steam"> 
+                            <div class="upload-box">
+                                <label for="comprobanteInput">Adjuntar Comprobante (Imagen)</label>
+                                <input type="file" id="comprobanteInput" class="custom-file-input" accept="image/*">
+                                <div id="previewComprobanteContainer" style="margin-top: 10px;"></div>
+                            </div>
+                        </div>
+
+                        <input type="hidden" name="precio_final_descuento" id="precioFinalInput">
+                        <input type="hidden" name="to_name" value="Admin Steam">
+                        <input type="hidden" name="plataforma_origen" value="Steam">
+
+                        <div class="step-actions">
+                            <button type="button" class="btn btn-secondary" onclick="window.prevStep(2)">&larr; Atrás</button>
+                            <button type="submit" class="btn btn-primary btn-send" id="btnEnviar" disabled>Enviar Pedido</button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -241,6 +271,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <script type="module" src="assets/js/main.js"></script> 
+    
     <a href="https://wa.me/56948943497?text=Hola%20HaitianDiscount" class="whatsapp-float" target="_blank">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592z"/></svg>
     </a>
