@@ -26,8 +26,8 @@ export function initStorePage(config) {
 
     const saldoRef = ref(db, budgetRefString);
     const estadoRef = ref(db, statusRefString);
-    const SERVICE_ID = 'service_jke4epd';    //SERVICE ID EMAILJS
-    const TEMPLATE_ID = 'template_0l9w69b';  //TEMPLATE ID EMAILJS
+    const SERVICE_ID = 'service_7gak5za';    //SERVICE ID EMAILJS
+    const TEMPLATE_ID = 'template_3z533nm';  //TEMPLATE ID EMAILJS
 
     let presupuestoActual = 0; 
     const displayTope = document.getElementById('tope-dinero');
