@@ -1,9 +1,10 @@
-import { ref, onValue, query, orderByChild, equalTo, get, set, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";import { signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { ref, onValue, query, orderByChild, equalTo, get, set, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { db, auth, provider, initTheme, configurarValidacionRut } from './config.js';
 
 initTheme();
 
-// DOM Elements
+// --- DOM Elements ---
 const loginView = document.getElementById('loginView');
 const userView = document.getElementById('userView');
 const historyBody = document.getElementById('historyBody');
@@ -24,13 +25,13 @@ if (profileRut) {
     });
 }
 
-// ADMINS
+// ADMINS (IDs con permiso para ver botón Admin)
 const ADMIN_UIDS = [
     'y7wKykEchQON3tS22mRhJURsHOv1', 
     'DEKH3yxMy6hCTkdbvwZl4dkFlnc2' 
 ];
 
-// 2. AUTH
+// --- 1. AUTHENTICATION ---
 document.getElementById('btnGoogleLogin').addEventListener('click', () => {
     signInWithPopup(auth, provider).catch(err => Swal.fire('Error', err.message, 'error'));
 });
@@ -70,7 +71,7 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
-// 3. GESTIÓN DATOS
+// --- 2. GESTIÓN DATOS USUARIO ---
 function cargarDatosUsuario(uid) {
     const userRef = ref(db, 'usuarios/' + uid);
     get(userRef).then((snapshot) => {
@@ -79,6 +80,7 @@ function cargarDatosUsuario(uid) {
             if(profileNombre) profileNombre.value = data.nombre || '';
             if(profileRut) {
                 profileRut.value = data.rut || '';
+                // Disparar evento para validar visualmente si ya viene cargado
                 if(profileRut.value) profileRut.dispatchEvent(new Event('input'));
             }
             if(profileSteam) profileSteam.value = data.steam_user || '';
@@ -109,7 +111,7 @@ function guardarDatosUsuario(uid) {
     });
 }
 
-// 4. HISTORIAL, ESTADÍSTICAS Y RANGOS VISUALES
+// --- 3. HISTORIAL, ESTADÍSTICAS Y RANGOS (CON BARRA DE PROGRESO) ---
 function cargarHistorial(uid) {
     const ordenesRef = query(ref(db, 'ordenes'), orderByChild('uid'), equalTo(uid));
     
@@ -120,24 +122,20 @@ function cargarHistorial(uid) {
         let totalAhorrado = 0;
         let totalJuegos = 0;
 
-        // Limpieza inicial visual
+        // Limpieza inicial de clases de avatar
         const avatarContainer = document.querySelector('.profile-avatar-container');
         if(avatarContainer) {
-            // Quitamos todas las clases de rango para empezar limpio
             avatarContainer.classList.remove('avatar-novato', 'avatar-cazador', 'avatar-veterano', 'avatar-leyenda');
         }
 
         if (!data) {
+            // Sin datos
             noDataMsg.style.display = 'block';
-            document.getElementById('statAhorro').innerText = '$0';
-            document.getElementById('statJuegos').innerText = '0';
-            const r = document.getElementById('statRango');
-            if(r) { r.innerText = 'Novato'; r.style.color = '#94a3b8'; }
-            if(avatarContainer) avatarContainer.classList.add('avatar-novato'); // Rango por defecto
+            actualizarUIStats(0, 0, 'Novato', '#94a3b8', 'avatar-novato', 3);
             return;
         }
-        noDataMsg.style.display = 'none';
         
+        noDataMsg.style.display = 'none';
         const list = Object.values(data).sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
         list.forEach(orden => {
@@ -174,45 +172,87 @@ function cargarHistorial(uid) {
             }
         });
 
-        // 1. DOM Stats
-        document.getElementById('statAhorro').innerText = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(totalAhorrado);
-        document.getElementById('statJuegos').innerText = totalJuegos;
-
-        // 2. LÓGICA DE RANGOS (TEXTO + MARCO DE AVATAR)
-        const rangoElem = document.getElementById('statRango');
-        
+        // --- CÁLCULO DE RANGO Y BARRA DE PROGRESO ---
         let nombreRango = "Novato";
-        let colorRango = "#94a3b8"; // Gris
+        let colorRango = "#94a3b8"; 
         let claseAvatar = "avatar-novato";
+        let nextGoal = 3; // Meta para el siguiente nivel
 
-        if (totalJuegos >= 3) {
+        if (totalJuegos < 3) {
+            nombreRango = "Novato";
+            colorRango = "#94a3b8";
+            claseAvatar = "avatar-novato";
+            nextGoal = 3;
+        } else if (totalJuegos < 10) {
             nombreRango = "Cazador";
             colorRango = "#10b981"; // Verde
             claseAvatar = "avatar-cazador";
-        }
-        if (totalJuegos >= 10) {
+            nextGoal = 10;
+        } else if (totalJuegos < 20) {
             nombreRango = "Veterano";
             colorRango = "#3b82f6"; // Azul
             claseAvatar = "avatar-veterano";
-        }
-        if (totalJuegos >= 20) {
+            nextGoal = 20;
+        } else {
             nombreRango = "Leyenda VIP";
             colorRango = "#f59e0b"; // Dorado
             claseAvatar = "avatar-leyenda";
+            nextGoal = 0; // Sin meta
         }
 
-        if(rangoElem) {
-            rangoElem.innerText = nombreRango;
-            rangoElem.style.color = colorRango;
-        }
-
-        if(avatarContainer) {
-            avatarContainer.classList.add(claseAvatar);
-        }
+        actualizarUIStats(totalAhorrado, totalJuegos, nombreRango, colorRango, claseAvatar, nextGoal);
     });
 }
 
-// 5. TABS
+// Función auxiliar para actualizar la UI del perfil
+function actualizarUIStats(ahorro, juegos, rangoTxt, rangoColor, avatarClass, nextGoal) {
+    // 1. Stats Numéricas
+    document.getElementById('statAhorro').innerText = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(ahorro);
+    document.getElementById('statJuegos').innerText = juegos;
+
+    // 2. Texto y Color de Rango
+    const rangoElem = document.getElementById('statRango');
+    if(rangoElem) {
+        rangoElem.innerText = rangoTxt;
+        rangoElem.style.color = rangoColor;
+    }
+
+    // 3. Avatar Border
+    const avatarContainer = document.querySelector('.profile-avatar-container');
+    if(avatarContainer) {
+        avatarContainer.className = 'profile-avatar-container ' + avatarClass;
+    }
+
+    // 4. BARRA DE PROGRESO
+    const barElem = document.getElementById('rankProgressBar');
+    const textElem = document.getElementById('rankProgressText');
+
+    if (nextGoal > 0) {
+        // Cálculo de porcentaje relativo a la meta actual
+        // (totalJuegos / nextGoal) * 100
+        let porcentaje = Math.min((juegos / nextGoal) * 100, 100);
+        let faltantes = nextGoal - juegos;
+        
+        if(barElem) {
+            barElem.style.width = `${porcentaje}%`;
+            barElem.style.background = rangoColor; // La barra toma el color del rango actual
+        }
+        if(textElem) {
+            textElem.innerText = `Faltan ${faltantes} compras para subir`;
+        }
+    } else {
+        // Nivel Máximo (Leyenda)
+        if(barElem) {
+            barElem.style.width = '100%';
+            barElem.style.background = 'linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%)';
+        }
+        if(textElem) {
+            textElem.innerText = '¡Has alcanzado el rango máximo!';
+        }
+    }
+}
+
+// --- 4. TABS LOGIC ---
 const tabs = document.querySelectorAll('.tab-btn');
 const contents = document.querySelectorAll('.tab-content');
 
@@ -226,7 +266,7 @@ tabs.forEach(tab => {
     });
 });
 
-// 6. CARGAR WISHLIST
+// --- 5. WISHLIST ---
 function cargarWishlist(uid) {
     const wishRef = ref(db, `usuarios/${uid}/wishlist`);
     
@@ -246,7 +286,6 @@ function cargarWishlist(uid) {
         noWishMsg.style.display = 'none';
 
         Object.entries(data).forEach(([gameId, item]) => {
-            // CAMBIO AQUÍ: Botón Comprar en lugar de Copiar
             const row = `
                 <tr>
                     <td style="text-align:center;">
@@ -269,10 +308,9 @@ function cargarWishlist(uid) {
     });
 }
 
-// --- NUEVA FUNCIÓN PARA REDIRIGIR ---
+// --- 6. FUNCIONES GLOBALES (ACCESIBLES DESDE HTML) ---
 window.irAComprar = (url) => {
-    // Detectamos si es Eneba o Steam para enviarlo a la página correcta
-    // (Asumiendo que estás en /pages/perfil.html, subimos un nivel con ../)
+    // Redirección inteligente dependiendo de si es Steam o Eneba
     if(url.includes('eneba')) {
         window.location.href = `../eneba.html?auto=${encodeURIComponent(url)}`;
     } else {
@@ -281,5 +319,15 @@ window.irAComprar = (url) => {
 };
 
 window.borrarDeseado = (uid, gameId) => {
-    remove(ref(db, `usuarios/${uid}/wishlist/${gameId}`));
+    Swal.fire({
+        title: '¿Eliminar de deseados?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            remove(ref(db, `usuarios/${uid}/wishlist/${gameId}`));
+        }
+    });
 };

@@ -175,6 +175,44 @@ td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 0.9rem; c
     margin: 0 auto;
 }
 
+/* Archivo: public/assets/css/perfil.css */
+
+/* --- BARRA DE PROGRESO RANGO --- */
+.rank-progress-wrapper {
+    margin-top: 8px;
+    width: 100%;
+}
+
+.rank-progress-bg {
+    background-color: rgba(0, 0, 0, 0.1); /* Fondo gris suave */
+    height: 6px;
+    border-radius: 10px;
+    width: 100%;
+    overflow: hidden;
+    margin-bottom: 4px;
+}
+
+.rank-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent) 0%, #a855f7 100%); /* Gradiente Azul a Morado */
+    border-radius: 10px;
+    transition: width 1s ease-in-out; /* Animación suave al cargar */
+    width: 0%;
+}
+
+.rank-progress-text {
+    font-size: 0.75rem;
+    color: var(--text-light);
+    display: block;
+    text-align: right; /* Texto alineado a la derecha */
+    font-weight: 500;
+}
+
+/* Modo oscuro ajuste */
+body.dark-mode .rank-progress-bg {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
 /* Ajuste Responsive para móviles */
 @media (max-width: 600px) {
     .user-header { flex-direction: column; text-align: center; }
