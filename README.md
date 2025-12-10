@@ -14,6 +14,7 @@ Directory structure:
     │   └── js/
     │       ├── admin.js
     │       ├── config.js
+    │       ├── storeLogic.js
     │       ├── eneba.js
     │       ├── main.js
     │       └── perfil.js
