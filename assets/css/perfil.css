@@ -213,6 +213,24 @@ td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 0.9rem; c
     display: block; margin: 0 auto;
 }
 
+/* --- AJUSTE WISHLIST: IMÁGENES HORIZONTALES --- */
+/* Sobreescribimos la clase solo cuando está dentro de la tabla wishlist */
+#wishlistTable .game-thumb-profile {
+    width: 120px;   /* Mucho más ancho */
+    height: 56px;   /* Altura reducida para mantener formato 16:9 aprox */
+    object-fit: cover;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* Ajuste opcional para móviles para que no ocupe tanto espacio */
+@media (max-width: 600px) {
+    #wishlistTable .game-thumb-profile {
+        width: 90px;
+        height: 42px;
+    }
+}
+
 @media (max-width: 600px) {
     .user-header { flex-direction: column; text-align: center; }
     .user-profile-group { flex-direction: column; width: 100%; }

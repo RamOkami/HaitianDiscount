@@ -1,5 +1,4 @@
-import { ref, onValue, query, orderByChild, equalTo, get, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-import { signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { ref, onValue, query, orderByChild, equalTo, get, set, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";import { signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { db, auth, provider, initTheme, configurarValidacionRut } from './config.js';
 
 initTheme();
@@ -61,6 +60,7 @@ onAuthStateChanged(auth, (user) => {
 
         cargarHistorial(user.uid);
         cargarDatosUsuario(user.uid);
+        cargarWishlist(user.uid);
 
         btnSaveData.onclick = () => guardarDatosUsuario(user.uid);
 
@@ -225,3 +225,55 @@ tabs.forEach(tab => {
         document.getElementById(targetId).classList.add('active');
     });
 });
+
+// 6. CARGAR WISHLIST
+function cargarWishlist(uid) {
+    const wishRef = ref(db, `usuarios/${uid}/wishlist`);
+    
+    onValue(wishRef, (snapshot) => {
+        const wishlistBody = document.getElementById('wishlistBody');
+        const noWishMsg = document.getElementById('noWishlistMsg');
+        
+        if(!wishlistBody) return; // Por seguridad
+        
+        wishlistBody.innerHTML = '';
+        const data = snapshot.val();
+
+        if (!data) {
+            noWishMsg.style.display = 'block';
+            return;
+        }
+        noWishMsg.style.display = 'none';
+
+        Object.entries(data).forEach(([gameId, item]) => {
+            const row = `
+                <tr>
+                    <td style="text-align:center;">
+                        <img src="${item.imagen}" class="game-thumb-profile" alt="Cover">
+                    </td>
+                    <td>
+                        <div style="font-weight:700; color:var(--primary);">${item.nombre}</div>
+                        <a href="${item.url}" target="_blank" style="font-size:0.8rem; color:var(--accent);">Ver en Steam</a>
+                    </td>
+                    <td>
+                        <button onclick="copiarLink('${item.url}')" class="btn btn-primary btn-sm" style="margin-right:5px;">Copiar Link</button>
+                        <button onclick="borrarDeseado('${uid}', '${gameId}')" class="btn btn-secondary btn-sm" style="color:var(--danger); border-color:var(--danger);">X</button>
+                    </td>
+                </tr>
+            `;
+            wishlistBody.innerHTML += row;
+        });
+    });
+}
+
+// Funciones globales para los botones de la tabla
+window.borrarDeseado = (uid, gameId) => {
+    remove(ref(db, `usuarios/${uid}/wishlist/${gameId}`));
+};
+
+window.copiarLink = (text) => {
+    navigator.clipboard.writeText(text).then(() => {
+        const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+        Toast.fire({ icon: 'success', title: 'Link copiado al portapapeles' });
+    });
+};

@@ -337,6 +337,41 @@ div:where(.swal2-input) { color: var(--primary) !important; background: var(--bg
     transform: translateY(-5px); /* Flota un poco al pasar el mouse */
 }
 
+/* --- WISHLIST HEART BUTTON (HOME) --- */
+.wishlist-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(0, 0, 0, 0.6);
+    border: none;
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.3s ease;
+    color: white; /* Corazón blanco por defecto */
+}
+
+.wishlist-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.wishlist-btn.active {
+    color: #ef4444; /* Rojo cuando está guardado */
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.wishlist-btn svg {
+    width: 24px;
+    height: 24px;
+    fill: currentColor; /* El SVG tomará el color del texto */
+}
+
 
 /* --- LÓGICA RESPONSIVE DE LA LUPA --- */
 /* Esta regla aplica SOLO si la pantalla es de PC (mayor a 768px) */
