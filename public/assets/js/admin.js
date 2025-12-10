@@ -97,7 +97,7 @@ async function sendSurveyEmail(orderId, customerEmail, gameTitle) {
     const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
     
     // ⚠️ REVISA: Si tu dominio de Firebase no es este, cámbialo abajo.
-    const productionHost = "https://ramokami-haitiandiscount.web.app"; 
+    const productionHost = "https://haitiandiscount.web.app"; 
     
     // Ajuste de ruta: Local suele necesitar /public/pages, prod solo /pages
     const baseUrl = isLocal 
