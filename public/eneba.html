@@ -123,12 +123,25 @@
                             <h4>Paso 1: Cotiza tu Key</h4>
                         </div>
 
-                        <div class="input-group">
-                            <label for="steamUrlInput">Link del Juego en Eneba</label>
-                            <input type="url" id="steamUrlInput" placeholder="https://www.eneba.com/latam/..." required>
+                        <div class="input-group" style="position: relative;">
+                            <label for="enebaUrlInput">Link del Juego en Eneba (Autocompletar)</label>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="url" id="enebaUrlInput" placeholder="https://www.eneba.com/latam/..." required>
+                                <button type="button" id="btnBuscarEneba" class="btn btn-eneba" style="width: auto; padding: 0 15px;" title="Buscar datos">
+                                    🔍
+                                </button>
+                            </div>
+                            
+                            <div id="previewContainer" class="game-preview-box" style="display: none;">
+                                <div id="gamePreviewBg" class="game-preview-bg"></div>
+                                <img id="gameCover" src="" alt="Portada del Juego">
+                            </div>
                         </div>
 
-                        <div class="input-group"><label>Nombre del Juego / Producto</label><input type="text" name="juego" id="juego" required placeholder="Ej. FIFA 24 Key Global"></div>
+                        <div class="input-group">
+                            <label>Nombre del Juego / Producto</label>
+                            <input type="text" name="juego" id="juego" required placeholder="Ej. FIFA 24 Key Global">
+                        </div>
 
                         <div class="grid-2">
                             <div class="input-group">
