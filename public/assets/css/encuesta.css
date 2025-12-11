@@ -1,0 +1,93 @@
+/* ARCHIVO: public/assets/css/encuesta.css */
+:root {
+    --primary-color: #2563eb;
+    --success-color: #10b981; 
+    --warning-color: #f59e0b;
+    --error-color: #ef4444;
+    --text-main: #333;
+    --bg-light: #ffffff;
+    --bg-darker: #f7f7f7;
+    --border-color: #e5e7eb;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-darker);
+    color: var(--text-main);
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.container {
+    background: var(--bg-light);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+    width: 100%;
+    text-align: center;
+}
+
+h1 {
+    color: var(--primary-color);
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+p.subtitle {
+    font-size: 16px;
+    color: #6b7280;
+    margin-bottom: 25px;
+}
+
+.rating-display {
+    font-size: 48px;
+    margin: 20px 0;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 6px 15px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 14px;
+    color: white;
+    margin-bottom: 20px;
+}
+
+#feedback-form {
+    text-align: left;
+    margin-top: 20px;
+}
+
+#comment {
+    width: 100%;
+    min-height: 100px;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    box-sizing: border-box;
+    resize: vertical;
+    font-family: 'Inter', sans-serif;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--success-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: #059669;
+}
