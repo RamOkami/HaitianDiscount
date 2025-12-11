@@ -1,3 +1,4 @@
+/* ARCHIVO: public/assets/js/config.js */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getDatabase } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 import { getAuth, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -30,8 +31,8 @@ export const EMAIL_CONFIG = {
     SERVICE_ID: "service_7gak5za",
     
     // IDs de las Plantillas
-    TEMPLATE_ORDER: "template_3z533nm",   // Para pedidos (storeLogic.js)
-    TEMPLATE_SURVEY: "template_06xzsnn"   // Para encuestas (admin.js)
+    TEMPLATE_ORDER: "template_3z533nm",   // Para pedidos
+    TEMPLATE_SURVEY: "template_06xzsnn"   // Para encuestas
 };
 
 export function initEmailService() {
@@ -39,7 +40,7 @@ export function initEmailService() {
         emailjs.init(EMAIL_CONFIG.PUBLIC_KEY);
         console.log("📧 EmailJS inicializado desde config.js");
     } else {
-        console.error("⚠️ La librería EmailJS no se ha cargado en el HTML. Asegúrate de incluir el script.");
+        console.error("⚠️ La librería EmailJS no se ha cargado en el HTML.");
     }
 }
 
@@ -122,12 +123,10 @@ export function initImageZoom() {
                         }
                     });
                 });
-                
                 img.dataset.zoomEnabled = "true"; 
             }
         });
     };
-
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', activarZoom);
     } else {
@@ -180,7 +179,7 @@ export function configurarValidacionRut(rutInput, callbackEstado) {
     });
 }
 
-// C. Comprimir Imagen
+// C. Comprimir Imagen (OPTIMIZADO A WEBP)
 export function comprimirImagen(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -190,14 +189,16 @@ export function comprimirImagen(file) {
             img.src = event.target.result;
             img.onload = () => {
                 const canvas = document.createElement('canvas');
-                const maxWidth = 800; 
+                const maxWidth = 800; // Mantenemos un ancho razonable
                 const scaleSize = maxWidth / img.width;
                 canvas.width = maxWidth;
                 canvas.height = img.height * scaleSize;
                 
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                const dataUrl = canvas.toDataURL('image/jpeg', 0.6); 
+                
+                // CAMBIO CLAVE: Formato WebP al 70% de calidad
+                const dataUrl = canvas.toDataURL('image/webp', 0.7); 
                 resolve(dataUrl);
             };
             img.onerror = (err) => reject(err);
