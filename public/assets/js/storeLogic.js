@@ -339,3 +339,38 @@ function initWizard() {
         });
     }
 }
+
+/* --- PORTAPAPELES INTELIGENTE --- */
+window.copiarDato = (texto, btnElement) => {
+    // 1. Usar API del portapapeles
+    navigator.clipboard.writeText(texto).then(() => {
+        
+        // 2. Feedback Visual (Cambiar icono y color)
+        const originalHTML = btnElement.innerHTML;
+        btnElement.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            Copiado
+        `;
+        btnElement.classList.add('copied');
+
+        // 3. Vibración en móviles (Haptic feedback)
+        if (navigator.vibrate) navigator.vibrate(50);
+
+        // 4. Restaurar botón después de 2 segundos
+        setTimeout(() => {
+            btnElement.innerHTML = originalHTML;
+            btnElement.classList.remove('copied');
+        }, 2000);
+
+    }).catch(err => {
+        console.error('Error al copiar:', err);
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'error',
+            title: 'No se pudo copiar automáticamente',
+            showConfirmButton: false,
+            timer: 2000
+        });
+    });
+};

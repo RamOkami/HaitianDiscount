@@ -648,3 +648,57 @@ body.dark-mode input:focus {
 .wizard-indicators.eneba-steps .step-indicator.active + .step-line {
     background: #a855f7;
 }
+
+/* --- PORTAPAPELES INTELIGENTE (Bank Details) --- */
+.bank-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Texto a la izq, botón a la der */
+    gap: 10px;
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--border);
+}
+
+.bank-list-item:last-child {
+    border-bottom: none;
+}
+
+.bank-data {
+    font-family: 'Consolas', monospace; /* Fuente monoespaciada para números */
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.btn-copy-mini {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-light);
+    cursor: pointer;
+    border-radius: 6px;
+    padding: 4px 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.btn-copy-mini:hover {
+    background: var(--bg-body);
+    color: var(--accent);
+    border-color: var(--accent);
+    transform: translateY(-1px);
+}
+
+.btn-copy-mini svg {
+    width: 14px;
+    height: 14px;
+    stroke-width: 2;
+}
+
+/* Estado de éxito (Copiado) */
+.btn-copy-mini.copied {
+    background-color: #dcfce7;
+    color: #166534;
+    border-color: #166534;
+}
