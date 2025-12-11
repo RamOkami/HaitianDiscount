@@ -13,11 +13,13 @@ Directory structure:
     │   ├── assets/
     │   │   ├── css/
     │   │   │   ├── admin.css
+    │   │   │   ├── encuesta.css
     │   │   │   ├── perfil.css
     │   │   │   └── style.css
     │   │   └── js/
     │   │       ├── admin.js
     │   │       ├── config.js
+    │   │       ├── encuesta.js
     │   │       ├── eneba.js
     │   │       ├── main.js
     │   │       ├── perfil.js

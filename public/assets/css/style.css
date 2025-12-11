@@ -87,7 +87,7 @@ body {
 .theme-btn:hover { background: var(--border); color: var(--primary); }
 .theme-btn svg { width: 18px; height: 18px; fill: currentColor; }
 
-/* --- NUEVO: ESTILO PARA ENLACE CON ICONO (PERFIL) --- */
+/* --- ESTILO PARA ENLACE CON ICONO (PERFIL) --- */
 .nav-icon-link {
     background: transparent;
     border: 1px solid var(--border); 
@@ -118,21 +118,20 @@ body {
 .hero .highlight { color: var(--accent); }
 .hero .subtitle { color: var(--text-light); max-width: 500px; margin: 0 auto; font-size: 1.1rem; }
 
-/* 4. SECCIÓN CÓMO FUNCIONA (Actualizada) */
+/* 4. SECCIÓN CÓMO FUNCIONA */
 .how-it-works { padding: 60px 0; background: var(--bg-body); }
 .section-title { text-align: center; font-size: 1.8rem; color: var(--primary); margin-bottom: 40px; font-weight: 800; letter-spacing: -0.5px; }
 
-/* FORZAMOS 3 COLUMNAS DENTRO DEL CONTENEDOR DE 800px */
 .steps-grid { 
     display: grid; 
     grid-template-columns: repeat(3, 1fr); 
-    gap: 20px; /* Gap reducido para que quepa bien en 800px */
+    gap: 20px; 
     text-align: center; 
 }
 
 .step-card { 
     background: var(--bg-card); 
-    padding: 25px 15px; /* Ajuste de padding */
+    padding: 25px 15px; 
     border: 1px solid var(--border); 
     border-radius: var(--radius); 
     box-shadow: var(--shadow-sm); 
@@ -147,7 +146,7 @@ body {
 .step-card h3 { font-size: 1.1rem; margin-bottom: 10px; color: var(--primary); font-weight: 700; }
 .step-card p { font-size: 0.9rem; color: var(--text-light); line-height: 1.5; }
 
-/* RESPONSIVE PASOS: Apilar en vertical en móviles */
+/* RESPONSIVE PASOS */
 @media (max-width: 768px) {
     .steps-grid {
         grid-template-columns: 1fr;
@@ -259,11 +258,6 @@ div:where(.swal2-input) { color: var(--primary) !important; background: var(--bg
 .alert-content a:hover { color: var(--accent-hover); }
 @media (max-width: 600px) { .steam-alert-box { flex-direction: column; text-align: center; align-items: center; } .alert-icon { margin-bottom: 10px; margin-top: 0; } }
 
-/* PREVIEW IMAGEN */
-.game-preview-box { display: none; margin: 15px 0 20px; text-align: center; animation: fadeIn 0.5s ease; }
-.game-preview-box img { max-width: 100%; max-height: 250px; border-radius: var(--radius); box-shadow: var(--shadow-md); border: 2px solid var(--accent); object-fit: cover; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-
 /* --- INPUT COMPROBANTE PERSONALIZADO --- */
 .upload-box {
     margin-top: 15px;
@@ -317,19 +311,31 @@ div:where(.swal2-input) { color: var(--primary) !important; background: var(--bg
     transition: transform 0.3s ease, filter 0.3s ease;
 }
 
-/* --- AMBIENT GLOW EFFECT (PREVIEW JUEGO) --- */
+/* --- EFECTO HOLOGRÁFICO 3D (VERSIÓN ANCHO COMPLETO) --- */
+
+/* 1. Contenedor Principal (Vuelve a ser ancho) */
 .game-preview-box {
+    display: none;
+    margin: 15px 0 25px; /* Margen estándar */
+    text-align: center;
     position: relative;
+    
+    /* ANCHO TOTAL: Ocupa lo mismo que los inputs */
+    width: 100%; 
+    max-width: 100%;
+    
     overflow: hidden; 
     border-radius: var(--radius);
-    padding: 20px;
-    transition: all 0.5s ease;
-    z-index: 1; 
-    background: transparent; 
-    margin-bottom: 25px;
+    
+    /* Un padding generoso ayuda a que la carta tenga espacio para girar sin cortarse */
+    padding: 20px 20px; 
+    
+    border: 1px solid var(--border); 
+    background: var(--bg-body); 
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.05); /* Sombra interna sutil */
 }
 
-/* La imagen de fondo borrosa */
+/* 2. Fondo Borroso (ESTÁTICO) */
 .game-preview-bg {
     position: absolute;
     top: 0;
@@ -339,26 +345,67 @@ div:where(.swal2-input) { color: var(--primary) !important; background: var(--bg
     background-size: cover;
     background-position: center;
     filter: blur(20px) brightness(0.6); 
-    z-index: -1; 
     transform: scale(1.2); 
+    z-index: 0;
     opacity: 0; 
     transition: opacity 0.5s ease;
+    pointer-events: none;
 }
 
-/* La imagen del juego (Portada) que flota encima */
-.game-preview-box img#gameCover {
+/* 3. Wrapper de la Carta (El objeto 3D) */
+.tilt-card-wrapper {
     position: relative;
+    display: inline-block;
+    perspective: 1000px;
     z-index: 2;
-    border-radius: 8px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
-    max-height: 220px;
-    border: 1px solid rgba(255, 255, 255, 0.2); 
-    transform: translateY(0);
-    transition: transform 0.3s ease;
+    transform-style: preserve-3d;
+    transition: transform 0.2s ease-out; /* Suavizado al salir */
 }
 
-.game-preview-box:hover img#gameCover {
-    transform: translateY(-5px); 
+/* 4. La Imagen (Carta) */
+.tilt-card-wrapper img#gameCover {
+    display: block;
+    max-width: 100%;
+    /* Mantenemos una altura controlada para que no sea gigante */
+    max-height: 250px; 
+    border-radius: 12px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5); 
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    
+    /* Movimiento */
+    transform: rotateX(var(--rotate-x, 0deg)) rotateY(var(--rotate-y, 0deg));
+    will-change: transform;
+}
+
+/* 5. El Brillo (Overlay) */
+.tilt-card-wrapper::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 12px;
+    z-index: 3;
+    pointer-events: none;
+    
+    background: linear-gradient(
+        125deg,
+        rgba(255,255,255,0) 0%,
+        rgba(255,255,255,0) 35%,
+        rgba(255,255,255,0.4) 50%, 
+        rgba(255,255,255,0) 65%,
+        rgba(255,255,255,0) 100%
+    );
+    
+    transform: rotateX(var(--rotate-x, 0deg)) rotateY(var(--rotate-y, 0deg));
+    
+    background-size: 200% 200%;
+    background-position: var(--bg-x, 50%) var(--bg-y, 50%);
+    mix-blend-mode: overlay; 
+    
+    opacity: var(--show-shine, 0);
+    transition: opacity 0.2s ease;
 }
 
 /* --- WISHLIST HEART BUTTON (HOME) --- */

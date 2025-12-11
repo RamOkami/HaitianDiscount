@@ -115,3 +115,52 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+    const previewContainer = document.getElementById('previewContainer');
+    const cardWrapper = document.getElementById('cardWrapper');
+    const cardImage = document.getElementById('gameCover');
+
+    if (previewContainer && cardWrapper && cardImage) {
+        
+        previewContainer.addEventListener('mousemove', (e) => {
+            const rect = previewContainer.getBoundingClientRect();
+            const width = rect.width;
+            const height = rect.height;
+
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            // --- AJUSTE DE ROTACIÓN ---
+            // Aumentado a 25 grados para que se note más el giro
+            const maxRotation = 25; 
+            
+            // Cálculos
+            let rotateY = ((mouseX - width / 2) / (width / 2)) * maxRotation;
+            let rotateX = ((mouseY - height / 2) / (height / 2)) * -maxRotation;
+
+            // Limites de seguridad
+            rotateX = Math.max(-maxRotation, Math.min(maxRotation, rotateX));
+            rotateY = Math.max(-maxRotation, Math.min(maxRotation, rotateY));
+
+            const bgX = (mouseX / width) * 100;
+            const bgY = (mouseY / height) * 100;
+
+            requestAnimationFrame(() => {
+                cardWrapper.style.setProperty('--rotate-x', `${rotateX}deg`);
+                cardWrapper.style.setProperty('--rotate-y', `${rotateY}deg`);
+                cardWrapper.style.setProperty('--bg-x', `${bgX}%`);
+                cardWrapper.style.setProperty('--bg-y', `${bgY}%`);
+                cardWrapper.style.setProperty('--show-shine', '1');
+            });
+        });
+
+        previewContainer.addEventListener('mouseleave', () => {
+            requestAnimationFrame(() => {
+                cardWrapper.style.setProperty('--rotate-x', '0deg');
+                cardWrapper.style.setProperty('--rotate-y', '0deg');
+                cardWrapper.style.setProperty('--show-shine', '0');
+            });
+        });
+    }
+});
