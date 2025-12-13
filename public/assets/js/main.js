@@ -1,7 +1,7 @@
 /* ARCHIVO: assets/js/main.js */
 import { initStorePage } from './storeLogic.js';
 import { db, auth } from './config.js';
-import { ref, set, get, remove, child, onValue, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { ref, set, get, remove, child, onValue, query, orderByChild, equalTo, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 // 1. INICIALIZAMOS LA LÓGICA COMPARTIDA
 initStorePage({
@@ -271,54 +271,45 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadFeedback() {
     const feedbackContainer = document.getElementById('feedback-container');
     
-    // Consulta para obtener solo las órdenes con feedback_recibido: true
+    // NUEVO: Consultamos el nodo público en lugar de 'ordenes'
+    // Ordenamos por fecha para obtener los últimos
     const feedbackQuery = query(
-        ref(db, 'ordenes'), // Usar 'db'
-        orderByChild('feedback/feedback_recibido'),
-        equalTo(true)
+        ref(db, 'feedbacks_publicos'),
+        orderByChild('fecha'),
+        limitToLast(4) 
     );
 
     try {
         const snapshot = await get(feedbackQuery);
         if (snapshot.exists()) {
             let feedbackHTML = '';
-            
             const feedbacks = [];
+            
             snapshot.forEach((childSnapshot) => {
-                const orderData = childSnapshot.val();
-                if (orderData.feedback && orderData.feedback.comment) {
-                    feedbacks.push(orderData);
-                }
+                feedbacks.push(childSnapshot.val());
             });
-            
-            // Ordenar por fecha_feedback descendente (más reciente primero)
-            feedbacks.sort((a, b) => new Date(b.feedback.fecha_feedback) - new Date(a.feedback.fecha_feedback));
-            
-            const feedbacksToShow = feedbacks.slice(0, 4); // Mostrar solo los 4 más recientes
 
-            feedbacksToShow.forEach((orderData) => {
-                const feedback = orderData.feedback;
-                
-                // Generar las estrellas 
+            // Revertimos para que el más nuevo salga primero (Firebase los devuelve ascendente)
+            feedbacks.reverse();
+
+            feedbacks.forEach((feedback) => {
                 const rating = feedback.rating || 5; 
                 const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
                 
-                // Formatear la fecha
-                const dateString = feedback.fecha_feedback || orderData.fecha_completo;
-                // Intentamos un formato de fecha seguro (YYYY-MM-DD)
+                // Formatear fecha simple
+                const dateString = feedback.fecha || '';
                 const safeDateString = dateString ? dateString.split('T')[0] : '';
-                const formattedDate = safeDateString || 'Fecha Desconocida';
                 
-                // Identificador del cliente (ej. la parte del email antes del @)
-                const clientIdentifier = orderData.email ? orderData.email.split('@')[0] : 'Cliente Anónimo'; 
+                // Usamos el nombre seguro guardado o un fallback
+                const clientName = feedback.cliente || 'Cliente HaitianDiscount';
                 
                 feedbackHTML += `
                     <div class="feedback-card">
                         <div class="rating">${stars}</div>
                         <p class="feedback-text">"${feedback.comment}"</p>
                         <div class="client-info">
-                            <span class="client-name">${clientIdentifier}</span>
-                            <span class="client-date">${formattedDate}</span>
+                            <span class="client-name">${clientName}</span>
+                            <span class="client-date">${safeDateString}</span>
                         </div>
                     </div>
                 `;
@@ -331,7 +322,8 @@ async function loadFeedback() {
         }
     } catch (error) {
         console.error("Error al cargar el feedback:", error);
-        feedbackContainer.innerHTML = '<p style="text-align: center; color: var(--danger);">Lo sentimos, no pudimos cargar las opiniones en este momento.</p>';
+        // Si falla, mostramos un mensaje amigable pero no rojo alarmante
+        feedbackContainer.innerHTML = '<p style="text-align: center; color: var(--text-light);">Cargando opiniones...</p>';
     }
 }
 

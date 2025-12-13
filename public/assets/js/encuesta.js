@@ -65,14 +65,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 const timestamp = new Date().toISOString();
 
                 try {
-                    // RUTA DONDE SE GUARDA EL FEEDBACK EN FIREBASE
+                    // 1. Guardar en la orden privada (Como antes)
                     const feedbackRef = ref(db, `ordenes/${orderId}/feedback`);
+                    const publicFeedbackRef = ref(db, `feedbacks_publicos/${orderId}`);
 
-                    await update(feedbackRef, {
+                    const feedbackData = {
                         rating: rating,
                         comment: comment,
                         fecha_feedback: timestamp,
                         feedback_recibido: true
+                    };
+
+                    // Actualizamos la orden privada
+                    await update(feedbackRef, feedbackData);
+
+                    // 2. NUEVO: Guardar copia en lista pública (Sin datos sensibles)
+                    // Nota: Usamos "Anónimo" o el nombre si pudiéramos obtenerlo, 
+                    // para la versión pública simplificada usaremos un identificador genérico seguro.
+                    await update(publicFeedbackRef, {
+                        rating: rating,
+                        comment: comment,
+                        fecha: timestamp,
+                        cliente: "Cliente Verificado" // Opcional: podrías pasar el nombre por URL si quisieras
                     });
 
                     feedbackContent.style.display = 'none';
