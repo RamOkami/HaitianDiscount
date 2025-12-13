@@ -161,7 +161,10 @@ export function initStorePage(config) {
             // Extraemos el ID del link que puso el usuario
             const match = steamLink.match(/app\/(\d+)/);
             if (match && match[1] === window.weeklyGameId) {
-                descuentoAplicar = 0.35; // ¡35% DE DESCUENTO!
+                // AQUÍ USAMOS EL VALOR DINÁMICO DEL ADMIN O 35% POR DEFECTO
+                const dynamicDiscount = window.weeklyDiscount || 35;
+                descuentoAplicar = dynamicDiscount / 100;
+                
                 esJuegoSemana = true;
             }
         }
@@ -219,19 +222,23 @@ export function initStorePage(config) {
                 text: `Descuento aplicado: ${Math.round(descuentoValor * 100)}%`, 
                 timer: 1500, 
                 showConfirmButton: false,
-                returnFocus: false // FIX PARA EL SALTO DE PÁGINA
+                returnFocus: false 
             });
         
         } else if (esJuegoSemana) {
             resFinalElem.classList.remove('text-vip');
             resFinalElem.style.color = '#f59e0b'; 
+            
+            // Texto dinámico con el porcentaje real que se aplicó
+            const textPct = Math.round(descuentoValor * 100);
+            
             Swal.fire({ 
                 icon: 'success', 
                 title: '🔥 ¡Oferta Especial!', 
-                text: 'Se aplicó un 35% de descuento por ser el Juego de la Semana.',
+                text: `Se aplicó un ${textPct}% de descuento por ser el Juego de la Semana.`,
                 timer: 2000, 
                 showConfirmButton: false,
-                returnFocus: false // FIX PARA EL SALTO DE PÁGINA
+                returnFocus: false 
             });
         
         } else {

@@ -174,16 +174,18 @@ function iniciarListeners() {
     // --- JUEGO DE LA SEMANA ---
     const weeklyRef = ref(db, 'juego_semana');
 
-    // 1. Leer datos actuales (Incluyendo la imagen custom)
+    // 1. Leer datos actuales (Incluyendo el descuento)
     onValue(weeklyRef, (snap) => {
         const data = snap.val();
         const inputAppId = document.getElementById('weeklyAppId');
         const inputCustomImg = document.getElementById('weeklyCustomImg');
+        const inputDiscount = document.getElementById('weeklyDiscount'); // <--- NUEVO
         const checkActive = document.getElementById('weeklyActive');
         
         if (data) {
-            if(inputAppId) inputAppId.value = data.linkOriginal || `https://store.steampowered.com/app/${data.appid}/`;
+            if(inputAppId) inputAppId.value = data.linkOriginal || (data.appid ? `https://store.steampowered.com/app/${data.appid}/` : '');
             if(inputCustomImg) inputCustomImg.value = data.customImage || '';
+            if(inputDiscount) inputDiscount.value = data.descuento || 35; // <--- Carga valor o defecto 35
             if(checkActive) checkActive.checked = data.activo || false;
         }
     });
@@ -194,11 +196,17 @@ function iniciarListeners() {
         btnSave.addEventListener('click', () => {
             const inputUrl = document.getElementById('weeklyAppId').value.trim();
             const customImgUrl = document.getElementById('weeklyCustomImg').value.trim();
+            let discountVal = parseInt(document.getElementById('weeklyDiscount').value); // <--- Leemos el valor
             const activo = document.getElementById('weeklyActive').checked;
 
             if (!inputUrl) {
                 Swal.fire('Error', 'Debes pegar un link de Steam', 'error');
                 return;
+            }
+
+            // Validación de seguridad para el descuento
+            if (!discountVal || discountVal < 1 || discountVal > 99) {
+                discountVal = 35; // Valor por defecto si lo dejan vacío o ponen algo raro
             }
 
             const regex = /app\/(\d+)/;
@@ -211,16 +219,17 @@ function iniciarListeners() {
 
             const appId = match[1];
 
-            // Guardamos todo en Firebase
+            // Guardamos todo en Firebase INCLUYENDO el descuento
             set(weeklyRef, {
                 appid: appId,
                 linkOriginal: inputUrl,
                 customImage: customImgUrl,
+                descuento: discountVal, // <--- GUARDAMOS AQUÍ
                 activo: activo,
                 updatedAt: new Date().toISOString()
             })
             .then(() => {
-                Swal.fire({ icon: 'success', title: '¡Guardado!', text: 'Configuración actualizada.' });
+                Swal.fire({ icon: 'success', title: '¡Guardado!', text: `Juego actualizado con ${discountVal}% de descuento.` });
             })
             .catch((error) => {
                 console.error(error);

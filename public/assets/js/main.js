@@ -192,7 +192,9 @@ document.addEventListener('DOMContentLoaded', () => {
     onValue(child(ref(db), 'juego_semana'), async (snap) => {
         const data = snap.val();
         
+        // Guardamos las variables GLOBALES para que storeLogic.js las pueda leer
         window.weeklyGameId = (data && data.activo) ? data.appid : null; 
+        window.weeklyDiscount = (data && data.descuento) ? data.descuento : 35; // Leemos el descuento o usamos 35 por defecto
 
         if (!data || !data.activo || !data.appid) {
             if(weeklySection) weeklySection.style.display = 'none';
@@ -200,6 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const appId = data.appid;
+        const discountText = window.weeklyDiscount; // Variable para el texto
 
         try {
             const targetUrl = `https://store.steampowered.com/api/appdetails?appids=${appId}&cc=cl`;
@@ -231,7 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <p class="weekly-price">
                                     Precio Steam: <span style="text-decoration: line-through; opacity: 0.7;">${precioFormateado}</span>
                                 </p>
-                                <p class="weekly-cta">¡35% DE DESCUENTO EXTRA!</p>
+                                <p class="weekly-cta">¡${discountText}% DE DESCUENTO EXTRA!</p>
                                 <button class="btn btn-primary weekly-btn">Ver Oferta &rarr;</button>
                             </div>
                         </div>
