@@ -3,24 +3,22 @@ import { initStorePage } from './storeLogic.js';
 import { db, auth } from './config.js';
 import { ref, set, get, remove, child, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-// 1. INICIALIZAMOS LA LÓGICA COMPARTIDA...
-
-// 1. INICIALIZAMOS LA LÓGICA COMPARTIDA (Presupuesto, Confeti, Auth, etc.)
+// 1. INICIALIZAMOS LA LÓGICA COMPARTIDA
 initStorePage({
     platformName: 'Steam',
     budgetRefString: 'presupuesto_steam',
     statusRefString: 'estado_steam'
 });
 
-// 2. LÓGICA ESPECÍFICA DE STEAM (BUSCADOR + WISHLIST + AUTO-COMPRA)
+// 2. LÓGICA ESPECÍFICA DE STEAM
 document.addEventListener('DOMContentLoaded', () => {
     
     const btnBuscarSteam = document.getElementById('btnBuscarSteam');
     const inputUrlSteam = document.getElementById('steamUrlInput');
     const previewContainer = document.getElementById('previewContainer');
     const gameCoverImg = document.getElementById('gameCover');
+    const cardWrapper = document.getElementById('cardWrapper');
 
-    // Variable temporal para guardar datos del juego actual (para la Wishlist)
     let currentGameData = null;
 
     if(btnBuscarSteam && inputUrlSteam) {
@@ -28,7 +26,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- EVENTO: CLIC EN BUSCAR ---
         btnBuscarSteam.addEventListener('click', async () => {
             console.log("Buscando juego..."); 
-            
             const url = inputUrlSteam.value;
             const regex = /app\/(\d+)/;
             const match = url.match(regex);
@@ -44,7 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
             window.Swal.fire({ title: 'Buscando en Steam...', didOpen: () => window.Swal.showLoading() });
 
             try {
-                // Usamos corsproxy.io para evitar bloqueos y obtener datos rápidos
                 const targetUrl = `https://store.steampowered.com/api/appdetails?appids=${appId}&cc=cl`;
                 const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
                 
@@ -56,7 +52,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (steamData[appId] && steamData[appId].success) {
                     const gameInfo = steamData[appId].data;
                     
-                    // Guardamos datos para la Wishlist
                     currentGameData = {
                         id: appId,
                         name: gameInfo.name,
@@ -64,56 +59,51 @@ document.addEventListener('DOMContentLoaded', () => {
                         url: `https://store.steampowered.com/app/${appId}/`
                     };
 
-                    // 1. Rellenar Nombre
                     const inputJuego = document.getElementById('juego');
                     if(inputJuego) inputJuego.value = gameInfo.name;
 
-                    // 2. Mostrar Portada + Lógica Visual
                     if (gameInfo.header_image && previewContainer && gameCoverImg) {
-                        // Foto principal
                         gameCoverImg.src = gameInfo.header_image;
                         
-                        // Efecto Ambient Glow (Fondo borroso)
                         const bgDiv = document.getElementById('gamePreviewBg');
                         if(bgDiv) {
                             bgDiv.style.backgroundImage = `url('${gameInfo.header_image}')`;
                             bgDiv.style.opacity = '1'; 
                         }
 
-                        // INYECTAR BOTÓN DE WISHLIST (CORAZÓN)
                         let wishBtn = document.getElementById('btnWishlistToggle');
                         if (!wishBtn) {
                             wishBtn = document.createElement('button');
                             wishBtn.id = 'btnWishlistToggle';
                             wishBtn.className = 'wishlist-btn';
-                            // Icono SVG de corazón
                             wishBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>';
                             previewContainer.appendChild(wishBtn);
                             wishBtn.addEventListener('click', toggleWishlist);
                         }
 
-                        // Verificar si ya lo tenemos en favoritos
                         checkWishlistStatus(appId);
-
                         previewContainer.style.display = 'block';
                     }
 
-                    // 3. Rellenar Precio y Calcular
                     const inputPrecio = document.getElementById('precioSteam');
                     window.Swal.close();
-                    
                     const Toast = window.Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
 
                     if (gameInfo.is_free) {
                         inputPrecio.value = 0;
                         Toast.fire({ icon: 'info', title: 'Juego Gratis' });
                     } else if (gameInfo.price_overview) {
-                        // La API devuelve centavos, dividimos por 100
                         let precio = gameInfo.price_overview.final / 100;
                         inputPrecio.value = precio;
-                        
-                        // Disparamos evento para que se activen validaciones
                         inputPrecio.dispatchEvent(new Event('input')); 
+
+                        // --- NUEVO: AUTO-CALCULAR PRECIO FINAL ---
+                        // Disparamos el cálculo automáticamente tras cargar el precio
+                        setTimeout(() => {
+                            const btnCalc = document.getElementById('btnCalcular');
+                            if(btnCalc) btnCalc.click();
+                        }, 300); // Pequeña espera para que la UI se actualice primero
+                        // -----------------------------------------
 
                         if(gameInfo.price_overview.discount_percent > 0) {
                             Toast.fire({ icon: 'success', title: `¡Oferta detectada! -${gameInfo.price_overview.discount_percent}%` });
@@ -128,34 +118,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch (error) {
                 console.error("Error en búsqueda:", error);
-                window.Swal.fire('Error', 'No pudimos cargar los datos automáticamente. Intenta ingresarlos manualmente.', 'error');
+                window.Swal.fire('Error', 'No pudimos cargar los datos. Intenta ingresarlos manualmente.', 'error');
             }
         });
     }
 
-    // --- FUNCIONES INTERNAS: WISHLIST ---
-    
+    // --- FUNCIONES WISHLIST ---
     async function toggleWishlist(e) {
-        e.preventDefault(); // Evita submit del form
+        e.preventDefault();
         const user = auth.currentUser;
-        
         if (!user) {
             window.Swal.fire('Inicia Sesión', 'Debes iniciar sesión para guardar en favoritos.', 'info');
             return;
         }
-
         if (!currentGameData) return;
 
         const btn = document.getElementById('btnWishlistToggle');
         const gameRef = child(ref(db), `usuarios/${user.uid}/wishlist/${currentGameData.id}`);
 
-        // Si ya tiene la clase active, es porque vamos a BORRAR
         if (btn.classList.contains('active')) {
             await remove(gameRef);
             btn.classList.remove('active');
             window.Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Eliminado de Deseados', showConfirmButton: false, timer: 1500 });
         } else {
-            // Si no, vamos a GUARDAR
             await set(gameRef, {
                 nombre: currentGameData.name,
                 imagen: currentGameData.image,
@@ -163,10 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 fecha_agregado: new Date().toISOString()
             });
             btn.classList.add('active');
-            
-            // Animación de confeti pequeña al guardar
             if(window.confetti) window.confetti({ particleCount: 30, spread: 40, origin: { y: 0.6 }, colors: ['#ef4444', '#ffffff'] });
-            
             window.Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Añadido a Deseados', showConfirmButton: false, timer: 1500 });
         }
     }
@@ -178,36 +160,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const snapshot = await get(child(ref(db), `usuarios/${user.uid}/wishlist/${appId}`));
-            if (snapshot.exists()) {
-                btn.classList.add('active'); // Se pone rojo
-            } else {
-                btn.classList.remove('active'); // Se pone blanco
-            }
-        } catch (e) {
-            console.error(e);
-        }
+            if (snapshot.exists()) btn.classList.add('active'); 
+            else btn.classList.remove('active'); 
+        } catch (e) { console.error(e); }
     }
 
-    // --- NUEVO: AUTOMATIZACIÓN (DETECTAR LINK DESDE PERFIL) ---
+    // --- AUTOCOMPLETADO + SCROLL (WISHLIST) ---
     const urlParams = new URLSearchParams(window.location.search);
     const autoLink = urlParams.get('auto');
-
     if (autoLink && inputUrlSteam && btnBuscarSteam) {
-        // 1. Pegamos el link en el input
         inputUrlSteam.value = autoLink;
         
-        // 2. Limpiamos la URL para que quede bonita
-        window.history.replaceState({}, document.title, window.location.pathname);
+        // Corrección de Scroll para Wishlist
+        const seccionPedido = document.getElementById('pedido');
+        if (seccionPedido) {
+            setTimeout(() => {
+                seccionPedido.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
 
-        // 3. Ejecutamos la búsqueda automáticamente (pequeño delay para asegurar carga de JS)
+        window.history.replaceState({}, document.title, window.location.pathname);
         setTimeout(() => {
-            console.log("Autocompletando compra desde Wishlist...");
+            console.log("Autocompletando compra...");
             btnBuscarSteam.click();
-        }, 500);
+        }, 600);
     }
 
-
-    // --- LÓGICA JUEGO DE LA SEMANA ---
+    // --- JUEGO DE LA SEMANA ---
     const weeklySection = document.getElementById('weeklyGameSection');
     
     onValue(child(ref(db), 'juego_semana'), async (snap) => {
@@ -234,15 +213,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const precio = game.price_overview ? (game.price_overview.final / 100) : 0;
                 const precioFormateado = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(precio);
                 
-                // --- LÓGICA DE IMAGEN PERSONALIZADA ---
-                // Si en la base de datos hay una URL válida, la usamos. Si no, usamos la de Steam.
+                // Lógica de Imagen Custom
                 let imagenFinal = game.header_image;
                 if (data.customImage && data.customImage.trim() !== "") {
                     imagenFinal = data.customImage;
                 }
-                // -------------------------------------
 
-                // Renderizamos el Banner HTML
                 weeklySection.innerHTML = `
                     <div class="weekly-banner" onclick="cargarJuegoSemana('${game.steam_appid}', '${game.name.replace(/'/g, "\\'")}')">
                         <div class="weekly-badge">🔥 JUEGO DE LA SEMANA</div>
@@ -276,23 +252,51 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Función global para cuando hacen click en el banner
     window.cargarJuegoSemana = (appId, nombre) => {
-        // 1. Poner link en el input
         const inputUrl = document.getElementById('steamUrlInput');
         const btnBuscar = document.getElementById('btnBuscarSteam');
         
         if(inputUrl && btnBuscar) {
             inputUrl.value = `https://store.steampowered.com/app/${appId}/`;
-            
-            // 2. Scroll suave hacia el formulario
-            document.getElementById('pedido').scrollIntoView({ behavior: 'smooth' });
-            
-            // 3. Ejecutar búsqueda automáticamente
-            setTimeout(() => {
-                btnBuscar.click();
-            }, 600);
+            document.getElementById('pedido').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(() => { btnBuscar.click(); }, 600);
         }
     };
 
+    // --- EFECTO 3D ---
+    if (previewContainer && cardWrapper && gameCoverImg) {
+        previewContainer.addEventListener('mousemove', (e) => {
+            const rect = previewContainer.getBoundingClientRect();
+            const width = rect.width;
+            const height = rect.height;
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            const maxRotation = 25; 
+            let rotateY = ((mouseX - width / 2) / (width / 2)) * maxRotation;
+            let rotateX = ((mouseY - height / 2) / (height / 2)) * -maxRotation;
+
+            rotateX = Math.max(-maxRotation, Math.min(maxRotation, rotateX));
+            rotateY = Math.max(-maxRotation, Math.min(maxRotation, rotateY));
+
+            const bgX = (mouseX / width) * 100;
+            const bgY = (mouseY / height) * 100;
+
+            requestAnimationFrame(() => {
+                cardWrapper.style.setProperty('--rotate-x', `${rotateX}deg`);
+                cardWrapper.style.setProperty('--rotate-y', `${rotateY}deg`);
+                cardWrapper.style.setProperty('--bg-x', `${bgX}%`);
+                cardWrapper.style.setProperty('--bg-y', `${bgY}%`);
+                cardWrapper.style.setProperty('--show-shine', '1');
+            });
+        });
+
+        previewContainer.addEventListener('mouseleave', () => {
+            requestAnimationFrame(() => {
+                cardWrapper.style.setProperty('--rotate-x', '0deg');
+                cardWrapper.style.setProperty('--rotate-y', '0deg');
+                cardWrapper.style.setProperty('--show-shine', '0');
+            });
+        });
+    }
 });
