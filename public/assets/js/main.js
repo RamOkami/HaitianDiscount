@@ -241,14 +241,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 weeklySection.innerHTML = `
                     <div class="weekly-banner" onclick="cargarJuegoSemana('${game.steam_appid}', '${game.name.replace(/'/g, "\\'")}')">
                         <div class="weekly-badge">🔥 JUEGO DE LA SEMANA</div>
+                        
                         <div class="weekly-content">
                             <img src="${game.header_image}" alt="${game.name}" class="weekly-img">
-                            <div class="weekly-info">
+                            
+                            <div class="weekly-info-col">
                                 <h3>${game.name}</h3>
-                                <p class="weekly-price">Precio Steam: <span style="text-decoration: line-through; opacity: 0.7;">${precioFormateado}</span></p>
-                                <p class="weekly-cta">¡Cotízalo con descuento ahora!</p>
+                                
+                                <p class="weekly-price">
+                                    Precio Steam: <span style="text-decoration: line-through; opacity: 0.7;">${precioFormateado}</span>
+                                </p>
+                                
+                                <p class="weekly-cta">¡35% DE DESCUENTO EXTRA!</p>
+                                
+                                <button class="btn btn-primary weekly-btn">Ver Oferta &rarr;</button>
                             </div>
-                            <button class="btn btn-primary weekly-btn">Ver Oferta &rarr;</button>
                         </div>
                     </div>
                 `;

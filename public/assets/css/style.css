@@ -750,17 +750,18 @@ body.dark-mode input:focus {
     border-color: #166534;
 }
 
-/* --- ESTILOS JUEGO DE LA SEMANA --- */
+/* --- ESTILOS JUEGO DE LA SEMANA (DISEÑO HORIZONTAL: IMG IZQ - DATOS DER) --- */
 .weekly-banner {
-    background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%); /* Fondo oscuro elegante */
-    border: 2px solid #f59e0b; /* Borde Dorado */
+    background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+    border: 2px solid #f59e0b;
     border-radius: var(--radius);
     padding: 0;
     position: relative;
     cursor: pointer;
     overflow: hidden;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 10px 30px rgba(245, 158, 11, 0.15); /* Resplandor dorado */
+    box-shadow: 0 10px 30px rgba(245, 158, 11, 0.15);
+    text-align: left; /* Alineación a la izquierda para los datos */
 }
 
 .weekly-banner:hover {
@@ -773,73 +774,103 @@ body.dark-mode input:focus {
     color: white;
     font-weight: 800;
     text-transform: uppercase;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     padding: 5px 15px;
     position: absolute;
     top: 0;
-    left: 0;
+    left: 0; /* Badge en la esquina superior izquierda */
     border-bottom-right-radius: 12px;
-    z-index: 2;
+    z-index: 5;
     letter-spacing: 1px;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
 }
 
 .weekly-content {
     display: flex;
-    align-items: center;
-    gap: 20px;
-    padding: 20px;
+    flex-direction: row; /* LADO A LADO */
+    align-items: center; /* Centrados verticalmente */
+    gap: 30px; /* Espacio entre imagen y texto */
+    padding: 25px;
 }
 
+/* Imagen a la izquierda */
 .weekly-img {
-    width: 200px;
+    width: 220px; /* Tamaño fijo equilibrado */
+    flex-shrink: 0; /* Evita que la imagen se aplaste */
     border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: transform 0.3s ease;
 }
 
-.weekly-info {
-    flex: 1;
-    text-align: left;
+.weekly-banner:hover .weekly-img {
+    transform: scale(1.03) rotate(-2deg); /* Un pequeño giro estiloso */
 }
 
-.weekly-info h3 {
-    margin: 0 0 5px 0;
+/* Contenedor de la derecha (Datos) */
+.weekly-info-col {
+    display: flex;
+    flex-direction: column; /* Datos uno debajo del otro */
+    justify-content: center;
+    flex: 1; /* Ocupa el resto del espacio */
+}
+
+.weekly-info-col h3 {
+    margin: 0 0 10px 0;
     color: white;
-    font-size: 1.5rem;
+    font-size: 1.8rem;
+    font-weight: 800;
+    line-height: 1.1;
 }
 
 .weekly-price {
-    color: #cbd5e1;
-    margin: 0;
-    font-size: 0.9rem;
+    color: #94a3b8;
+    margin: 0 0 5px 0;
+    font-size: 0.95rem;
 }
 
 .weekly-cta {
-    color: #f59e0b;
+    color: #f59e0b; /* Dorado */
     font-weight: 700;
-    margin-top: 5px;
+    font-size: 1.2rem;
+    margin: 0 0 20px 0; /* Espacio antes del botón */
+    text-transform: uppercase;
 }
 
 .weekly-btn {
-    background: #f59e0b !important; /* Botón naranja */
+    background: #f59e0b !important;
     border: none !important;
     color: white;
-    padding: 10px 20px;
+    padding: 12px 30px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border-radius: 6px;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+    width: fit-content; /* El botón se ajusta al texto, no ancho completo */
 }
 
-/* Modo Responsive */
-@media (max-width: 600px) {
+.weekly-btn:hover {
+    background: #fbbf24 !important;
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.6);
+    transform: translateY(-2px);
+}
+
+/* --- RESPONSIVE (Móvil) --- */
+/* En celular, volvemos a poner la imagen arriba y texto abajo para que quepa */
+@media (max-width: 700px) {
     .weekly-content {
         flex-direction: column;
         text-align: center;
-    }
-    .weekly-info {
-        text-align: center;
+        padding-top: 40px; /* Espacio para el badge si queda arriba */
     }
     .weekly-img {
         width: 100%;
         max-width: 280px;
     }
+    .weekly-info-col {
+        align-items: center; /* Centrar items en columna */
+    }
     .weekly-btn {
-        width: 100%;
+        width: 100%; /* Botón ancho en móvil */
     }
 }
