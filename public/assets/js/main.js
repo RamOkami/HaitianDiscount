@@ -98,12 +98,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         inputPrecio.dispatchEvent(new Event('input')); 
 
                         // --- NUEVO: AUTO-CALCULAR PRECIO FINAL ---
-                        // Disparamos el cálculo automáticamente tras cargar el precio
                         setTimeout(() => {
                             const btnCalc = document.getElementById('btnCalcular');
                             if(btnCalc) btnCalc.click();
-                        }, 300); // Pequeña espera para que la UI se actualice primero
-                        // -----------------------------------------
+                        }, 300); 
 
                         if(gameInfo.price_overview.discount_percent > 0) {
                             Toast.fire({ icon: 'success', title: `¡Oferta detectada! -${gameInfo.price_overview.discount_percent}%` });
@@ -171,7 +169,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (autoLink && inputUrlSteam && btnBuscarSteam) {
         inputUrlSteam.value = autoLink;
         
-        // Corrección de Scroll para Wishlist
         const seccionPedido = document.getElementById('pedido');
         if (seccionPedido) {
             setTimeout(() => {
@@ -192,9 +189,8 @@ document.addEventListener('DOMContentLoaded', () => {
     onValue(child(ref(db), 'juego_semana'), async (snap) => {
         const data = snap.val();
         
-        // Guardamos las variables GLOBALES para que storeLogic.js las pueda leer
         window.weeklyGameId = (data && data.activo) ? data.appid : null; 
-        window.weeklyDiscount = (data && data.descuento) ? data.descuento : 35; // Leemos el descuento o usamos 35 por defecto
+        window.weeklyDiscount = (data && data.descuento) ? data.descuento : 35; 
 
         if (!data || !data.activo || !data.appid) {
             if(weeklySection) weeklySection.style.display = 'none';
@@ -202,7 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const appId = data.appid;
-        const discountText = window.weeklyDiscount; // Variable para el texto
+        const discountText = window.weeklyDiscount; 
 
         try {
             const targetUrl = `https://store.steampowered.com/api/appdetails?appids=${appId}&cc=cl`;
@@ -216,7 +212,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const precio = game.price_overview ? (game.price_overview.final / 100) : 0;
                 const precioFormateado = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(precio);
                 
-                // Lógica de Imagen Custom
                 let imagenFinal = game.header_image;
                 if (data.customImage && data.customImage.trim() !== "") {
                     imagenFinal = data.customImage;
@@ -255,14 +250,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // --- FUNCIÓN CORREGIDA: SCROLL SUAVE + FOCO SEGURO ---
     window.cargarJuegoSemana = (appId, nombre) => {
         const inputUrl = document.getElementById('steamUrlInput');
         const btnBuscar = document.getElementById('btnBuscarSteam');
+        const seccionPedido = document.getElementById('pedido');
         
-        if(inputUrl && btnBuscar) {
+        if(inputUrl && btnBuscar && seccionPedido) {
+            // 1. Ponemos el link
             inputUrl.value = `https://store.steampowered.com/app/${appId}/`;
-            document.getElementById('pedido').scrollIntoView({ behavior: 'smooth', block: 'center' });
-            setTimeout(() => { btnBuscar.click(); }, 600);
+            
+            // 2. Iniciamos el scroll SUAVE (animación del navegador)
+            seccionPedido.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // 3. Esperamos 800ms a que la animación de bajada termine visualmente
+            setTimeout(() => {
+                // AHORA sí hacemos foco (para que no salte al cerrar Swal)
+                inputUrl.focus({ preventScroll: true }); // preventScroll ayuda en navegadores modernos
+                
+                // Y hacemos clic en buscar
+                btnBuscar.click();
+            }, 800);
         }
     };
 });
@@ -274,8 +282,7 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadFeedback() {
     const feedbackContainer = document.getElementById('feedback-container');
     
-    // NUEVO: Consultamos el nodo público en lugar de 'ordenes'
-    // Ordenamos por fecha para obtener los últimos
+    // NUEVO: Consultamos el nodo público
     const feedbackQuery = query(
         ref(db, 'feedbacks_publicos'),
         orderByChild('fecha'),
@@ -292,18 +299,16 @@ async function loadFeedback() {
                 feedbacks.push(childSnapshot.val());
             });
 
-            // Revertimos para que el más nuevo salga primero (Firebase los devuelve ascendente)
+            // Revertimos para que el más nuevo salga primero
             feedbacks.reverse();
 
             feedbacks.forEach((feedback) => {
                 const rating = feedback.rating || 5; 
                 const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
                 
-                // Formatear fecha simple
                 const dateString = feedback.fecha || '';
                 const safeDateString = dateString ? dateString.split('T')[0] : '';
                 
-                // Usamos el nombre seguro guardado o un fallback
                 const clientName = feedback.cliente || 'Cliente HaitianDiscount';
                 
                 feedbackHTML += `
@@ -325,10 +330,8 @@ async function loadFeedback() {
         }
     } catch (error) {
         console.error("Error al cargar el feedback:", error);
-        // Si falla, mostramos un mensaje amigable pero no rojo alarmante
         feedbackContainer.innerHTML = '<p style="text-align: center; color: var(--text-light);">Cargando opiniones...</p>';
     }
 }
 
-// Llama a la función cuando el DOM esté cargado
 document.addEventListener('DOMContentLoaded', loadFeedback);

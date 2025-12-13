@@ -1,9 +1,11 @@
 /* ARCHIVO: assets/js/perfil.js */
-import { ref, onValue, query, orderByChild, equalTo, get, set, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+// 1. IMPORTANTE: Agregamos 'update' a los imports
+import { ref, onValue, query, orderByChild, equalTo, get, set, update, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 import { signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { db, auth, provider, initTheme, configurarValidacionRut } from './config.js';
 
 initTheme();
+
 // --- DOM Elements ---
 const loginView = document.getElementById('loginView');
 const userView = document.getElementById('userView');
@@ -29,9 +31,11 @@ if (profileRut) {
 document.getElementById('btnGoogleLogin').addEventListener('click', () => {
     signInWithPopup(auth, provider).catch(err => Swal.fire('Error', err.message, 'error'));
 });
+
 document.getElementById('btnLogout').addEventListener('click', () => {
     signOut(auth).then(() => window.location.reload());
 });
+
 onAuthStateChanged(auth, (user) => {
     if (user) {
         loginView.classList.add('hidden');
@@ -88,13 +92,17 @@ function guardarDatosUsuario(uid) {
     const nombre = profileNombre.value.trim();
     const rut = profileRut.value.trim();
     const steam = profileSteam.value.trim();
+
     if (rut.length > 0 && !rutEsValido) {
         Swal.fire('Error', 'El RUT ingresado no es válido.', 'error');
         profileRut.focus();
         return;
     }
 
-    set(ref(db, 'usuarios/' + uid), {
+    // --- CORRECCIÓN AQUÍ: Usamos update() en lugar de set() ---
+    // set() borraba todo el nodo (incluyendo wishlist).
+    // update() solo cambia los campos indicados y respeta lo demás.
+    update(ref(db, 'usuarios/' + uid), {
         nombre: nombre,
         rut: rut,
         steam_user: steam
@@ -102,6 +110,7 @@ function guardarDatosUsuario(uid) {
         const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
         Toast.fire({ icon: 'success', title: 'Datos guardados correctamente' });
     }).catch(err => {
+        console.error(err);
         Swal.fire('Error', 'No se pudieron guardar los datos.', 'error');
     });
 }
@@ -136,14 +145,13 @@ function cargarHistorial(uid) {
             const estado = orden.estado || 'pendiente';
             const plat = orden.plataforma || 'Steam';
             const platClass = plat === 'Eneba' ? 'platform-eneba' : 'platform-steam';
-
+            
             let imgHtml = '<span style="font-size:0.8rem; color:#ccc;">Sin Img</span>';
             if(orden.imagen_juego) {
                 imgHtml = `<img src="${orden.imagen_juego}" class="game-thumb-profile" alt="Juego">`;
             }
 
             const showKey = (plat === 'Eneba' && estado === 'completado' && orden.game_key);
-            // Esta clase es clave para quitar el borde de separación interna
             const rowClass = showKey ? 'has-key-below' : '';
 
             // Fila Principal
@@ -190,7 +198,7 @@ function cargarHistorial(uid) {
 
         // RANGOS
         let nombreRango = "Novato";
-        let colorRango = "#94a3b8"; 
+        let colorRango = "#94a3b8";
         let claseAvatar = "avatar-novato";
         let nextGoal = 3;
 
@@ -258,6 +266,7 @@ function actualizarUIStats(ahorro, juegos, rangoTxt, rangoColor, avatarClass, ne
 // --- TABS & GLOBAL FUNCTIONS ---
 const tabs = document.querySelectorAll('.tab-btn');
 const contents = document.querySelectorAll('.tab-content');
+
 tabs.forEach(tab => {
     tab.addEventListener('click', () => {
         tabs.forEach(t => t.classList.remove('active'));
@@ -320,7 +329,7 @@ window.borrarDeseado = (uid, gameId) => {
     }).then((result) => {
          if (result.isConfirmed) {
             remove(ref(db, `usuarios/${uid}/wishlist/${gameId}`));
-        }
+         }
     });
 };
 

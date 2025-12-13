@@ -1,6 +1,6 @@
 /* ARCHIVO: public/assets/js/storeLogic.js */
 import { ref, onValue, runTransaction, get, child, push, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { db, auth, initTheme, initImageZoom, comprimirImagen, configurarValidacionRut, EMAIL_CONFIG, initEmailService } from './config.js';
 
 // Inicializamos cosas visuales globales y el servicio de Email
@@ -63,7 +63,7 @@ export function initStorePage(config) {
     // --- LISTENERS BÁSICOS ---
     if(btnCalc) { 
         btnCalc.addEventListener('click', (e) => {
-            e.preventDefault(); // Evita cualquier salto extraño
+            e.preventDefault(); 
             calcularDescuento();
         });
     }
@@ -120,6 +120,21 @@ export function initStorePage(config) {
             get(ref(db, 'usuarios/' + user.uid)).then((snapshot) => {
                 if (snapshot.exists()) {
                     const data = snapshot.val();
+                    
+                    // Verificación de baneo al cargar la página
+                    if (data.status === 'baneado') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Cuenta Suspendida',
+                            text: 'Tu acceso ha sido restringido permanentemente.',
+                            allowOutsideClick: false,
+                            confirmButtonText: 'Cerrar Sesión'
+                        }).then(() => {
+                            signOut(auth).then(() => window.location.reload());
+                        });
+                        return;
+                    }
+
                     const nombreInput = document.getElementById('nombre');
                     if (nombreInput && data.nombre) nombreInput.value = data.nombre;
                     const rutInput = document.getElementById('rut');
@@ -134,11 +149,10 @@ export function initStorePage(config) {
         }
     });
 
-    // --- CÁLCULO (ACTUALIZADO CON JUEGO DE LA SEMANA) ---
+    // --- CÁLCULO ---
     function calcularDescuento() {
         if (!tiendaAbierta) return;
 
-        // 1. OBTENER VALOR LIMPIO
         const valorRaw = inputPrecio.value.replace(/\D/g, '');
         const codigoInput = document.getElementById('codigoInvitado').value.trim().toUpperCase(); 
         const inputCodigoElem = document.getElementById('codigoInvitado'); 
@@ -151,25 +165,19 @@ export function initStorePage(config) {
 
         const precio = parseInt(valorRaw, 10);
         
-        // --- LÓGICA DE DESCUENTO BASE ---
-        let descuentoAplicar = 0.30; // 30% por defecto
+        let descuentoAplicar = 0.30; 
         let esJuegoSemana = false;
 
-        // Verificamos si es el Juego de la Semana (Solo Steam)
         if (platformName === 'Steam' && window.weeklyGameId) {
             const steamLink = document.getElementById('steamUrlInput').value;
-            // Extraemos el ID del link que puso el usuario
             const match = steamLink.match(/app\/(\d+)/);
             if (match && match[1] === window.weeklyGameId) {
-                // AQUÍ USAMOS EL VALOR DINÁMICO DEL ADMIN O 35% POR DEFECTO
                 const dynamicDiscount = window.weeklyDiscount || 35;
                 descuentoAplicar = dynamicDiscount / 100;
-                
                 esJuegoSemana = true;
             }
         }
 
-        // --- CÓDIGO VIP (Sobrescribe si existe) ---
         if (codigoInput === "") {
             const precioFinal = Math.round(precio * (1 - descuentoAplicar));
             mostrarResultadosUI(precio, precioFinal, false, descuentoAplicar, esJuegoSemana);
@@ -183,7 +191,7 @@ export function initStorePage(config) {
             let esVip = false;
             
             if (snapshot.exists()) {
-                descuentoAplicar = snapshot.val(); // El VIP manda sobre el juego de la semana
+                descuentoAplicar = snapshot.val(); 
                 esVip = true;
                 inputCodigoElem.classList.add('vip-active'); 
             } else {
@@ -199,7 +207,6 @@ export function initStorePage(config) {
         });
     }
 
-    // Actualizamos la UI para mostrar mensaje especial
     function mostrarResultadosUI(precioOriginal, precioFinal, esVip, descuentoValor, esJuegoSemana) {
         const resultadoDiv = document.getElementById('resultado');
         resultadoDiv.style.display = 'block'; 
@@ -212,34 +219,16 @@ export function initStorePage(config) {
         resFinalElem.innerText = formatoDinero(precioFinal);
         if(inputPrecioFinal) inputPrecioFinal.value = formatoDinero(precioFinal);
 
-        // Mensajes de Feedback
         if (esVip) {
             resFinalElem.classList.add('text-vip');
             resFinalElem.style.color = ''; 
-            Swal.fire({ 
-                icon: 'success', 
-                title: '¡Código VIP!', 
-                text: `Descuento aplicado: ${Math.round(descuentoValor * 100)}%`, 
-                timer: 1500, 
-                showConfirmButton: false,
-                returnFocus: false 
-            });
+            Swal.fire({ icon: 'success', title: '¡Código VIP!', text: `Descuento aplicado: ${Math.round(descuentoValor * 100)}%`, timer: 1500, showConfirmButton: false });
         
         } else if (esJuegoSemana) {
             resFinalElem.classList.remove('text-vip');
             resFinalElem.style.color = '#f59e0b'; 
-            
-            // Texto dinámico con el porcentaje real que se aplicó
             const textPct = Math.round(descuentoValor * 100);
-            
-            Swal.fire({ 
-                icon: 'success', 
-                title: '🔥 ¡Oferta Especial!', 
-                text: `Se aplicó un ${textPct}% de descuento por ser el Juego de la Semana.`,
-                timer: 2000, 
-                showConfirmButton: false,
-                returnFocus: false 
-            });
+            Swal.fire({ icon: 'success', title: '🔥 ¡Oferta Especial!', text: `Se aplicó un ${textPct}% de descuento por ser el Juego de la Semana.`, timer: 2000, showConfirmButton: false });
         
         } else {
             resFinalElem.classList.remove('text-vip');
@@ -256,7 +245,7 @@ export function initStorePage(config) {
         }
     }
 
-    // --- SUBMIT ---
+    // --- SUBMIT (CON VERIFICACIÓN DE ESTADO) ---
     if(form) {
         form.addEventListener('submit', async function(event) {
             event.preventDefault(); 
@@ -272,6 +261,43 @@ export function initStorePage(config) {
                 return;
             }
 
+            // --- NUEVO: VERIFICACIÓN DE ESTADO DEL USUARIO ---
+            const user = auth.currentUser;
+            if (user) {
+                try {
+                    const userSnapshot = await get(child(ref(db), `usuarios/${user.uid}`));
+                    const userData = userSnapshot.val();
+                    const status = userData?.status || 'activo';
+
+                    if (status === 'baneado') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Acceso Denegado',
+                            text: 'Tu cuenta ha sido baneada permanentemente por infringir las normas.',
+                            confirmButtonText: 'Cerrar Sesión'
+                        }).then(() => {
+                            signOut(auth).then(() => window.location.reload());
+                        });
+                        return; // DETIENE EL PROCESO
+                    }
+
+                    if (status === 'pausado') {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Cuenta Pausada',
+                            text: 'Tu cuenta está en revisión temporal. No puedes realizar compras en este momento.',
+                        });
+                        return; // DETIENE EL PROCESO
+                    }
+
+                } catch (e) {
+                    console.error("Error verificando estado:", e);
+                    // Si falla la verificación por internet, podemos decidir si dejar pasar o bloquear.
+                    // Por seguridad, mejor dejar pasar si es un error de red puntual, pero loguear.
+                }
+            }
+            // ----------------------------------------------------
+
             const precioOriginalStr = document.getElementById('res-original').innerText;
             const costoOriginal = parseInt(precioOriginalStr.replace(/\D/g, '')); 
             const precioClienteStr = document.getElementById('res-final').innerText;
@@ -279,6 +305,7 @@ export function initStorePage(config) {
 
             Swal.fire({ title: 'Procesando Pedido', html: 'Iniciando sistema...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             const updateStatus = (texto) => { if(Swal.getHtmlContainer()) Swal.getHtmlContainer().textContent = texto; };
+            
             try {
                 updateStatus('1/4 Optimizando imagen...');
                 const comprobanteBase64 = await comprimirImagen(inputComprobante.files[0]);
@@ -291,7 +318,6 @@ export function initStorePage(config) {
                 }).then((result) => {
                     if (result.committed) {
                         updateStatus('3/4 Guardando tu pedido...');
-                        const user = auth.currentUser; 
                         const coverImgSrc = document.getElementById('gameCover')?.src || '';
 
                         const nuevaOrdenRef = push(ref(db, 'ordenes'));
@@ -322,7 +348,6 @@ export function initStorePage(config) {
                             if(previewComp) previewComp.innerHTML = '';
                             document.getElementById('resultado').style.display = 'none';
                             
-                            // Resetear Wizard
                             window.showStep(1);
                         });
                     } else {
@@ -353,11 +378,9 @@ function initWizard() {
         currentStep = stepNumber;
     };
     window.nextStep = (targetStep) => {
-        // Validaciones Paso 1
         if (currentStep === 1 && targetStep === 2) {
             const precio = document.getElementById('res-final').innerText;
             const inputJuego = document.getElementById('juego').value;
-            // Verifica si el resultado está visible (calculado)
             if (precio === '$0' || document.getElementById('resultado').style.display === 'none') {
                 Swal.fire('¡Espera!', 'Primero debes calcular el precio.', 'warning');
                 return;
@@ -367,7 +390,6 @@ function initWizard() {
                 return;
             }
         }
-        // Validaciones Paso 2
         if (currentStep === 2 && targetStep === 3) {
             const email = document.getElementById('email').value;
             const nombre = document.getElementById('nombre').value;
@@ -382,7 +404,6 @@ function initWizard() {
     window.prevStep = (targetStep) => {
         window.showStep(targetStep);
     };
-    // Preview de Comprobante (Paso 3)
     const fileInput = document.getElementById('comprobanteInput');
     if(fileInput) {
         fileInput.addEventListener('change', function(e) {
