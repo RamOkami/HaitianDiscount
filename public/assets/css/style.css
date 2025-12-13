@@ -750,23 +750,35 @@ body.dark-mode input:focus {
     border-color: #166534;
 }
 
-/* --- ESTILOS JUEGO DE LA SEMANA (DISEÑO HORIZONTAL: IMG IZQ - DATOS DER) --- */
+/* --- ESTILOS JUEGO DE LA SEMANA (ADAPTABLE LIGHT/DARK) --- */
 .weekly-banner {
-    background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
-    border: 2px solid #f59e0b;
+    /* ESTILOS BASE (MODO CLARO) */
+    background: var(--bg-card); /* Usa el fondo de tarjeta del tema actual */
+    border: 2px solid #f59e0b; /* Borde dorado siempre */
     border-radius: var(--radius);
     padding: 0;
     position: relative;
     cursor: pointer;
     overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 10px 30px rgba(245, 158, 11, 0.15);
-    text-align: left; /* Alineación a la izquierda para los datos */
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow);
+    text-align: left;
+    color: var(--text-main); /* Texto principal del tema */
 }
 
+/* ESTILOS ESPECÍFICOS MODO OSCURO (Override) */
+body.dark-mode .weekly-banner {
+    background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%); /* El gradiente oscuro original */
+    box-shadow: 0 10px 30px rgba(245, 158, 11, 0.15);
+    color: white; /* Fuerza texto blanco sobre el fondo oscuro */
+    border-color: #f59e0b; /* Asegura el borde dorado */
+}
+
+/* Hover Effect (Funciona en ambos modos) */
 .weekly-banner:hover {
     transform: translateY(-5px);
     box-shadow: 0 15px 40px rgba(245, 158, 11, 0.25);
+    border-color: #fbbf24; /* Un dorado un poco más brillante al pasar el mouse */
 }
 
 .weekly-badge {
@@ -778,75 +790,84 @@ body.dark-mode input:focus {
     padding: 5px 15px;
     position: absolute;
     top: 0;
-    left: 0; /* Badge en la esquina superior izquierda */
+    left: 0;
     border-bottom-right-radius: 12px;
     z-index: 5;
     letter-spacing: 1px;
-    box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
 }
 
 .weekly-content {
     display: flex;
-    flex-direction: row; /* LADO A LADO */
-    align-items: center; /* Centrados verticalmente */
-    gap: 30px; /* Espacio entre imagen y texto */
+    flex-direction: row;
+    align-items: center;
+    gap: 30px;
     padding: 25px;
 }
 
-/* Imagen a la izquierda */
 .weekly-img {
-    width: 220px; /* Tamaño fijo equilibrado */
-    flex-shrink: 0; /* Evita que la imagen se aplaste */
+    width: 220px;
+    flex-shrink: 0;
     border-radius: 8px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.5);
-    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: var(--shadow); /* Sombra adaptable */
     transition: transform 0.3s ease;
 }
 
-.weekly-banner:hover .weekly-img {
-    transform: scale(1.03) rotate(-2deg); /* Un pequeño giro estiloso */
+/* En modo oscuro, la sombra de la imagen necesita ser más fuerte o diferente */
+body.dark-mode .weekly-img {
+    box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.1);
 }
 
-/* Contenedor de la derecha (Datos) */
+.weekly-banner:hover .weekly-img {
+    transform: scale(1.03) rotate(-2deg);
+}
+
 .weekly-info-col {
     display: flex;
-    flex-direction: column; /* Datos uno debajo del otro */
+    flex-direction: column;
     justify-content: center;
-    flex: 1; /* Ocupa el resto del espacio */
+    flex: 1;
 }
 
 .weekly-info-col h3 {
     margin: 0 0 10px 0;
-    color: white;
+    /* El color se hereda del .weekly-banner (oscuro en light mode, blanco en dark mode) */
     font-size: 1.8rem;
     font-weight: 800;
     line-height: 1.1;
 }
 
 .weekly-price {
-    color: #94a3b8;
+    color: var(--text-light); /* Color de texto secundario del tema */
     margin: 0 0 5px 0;
     font-size: 0.95rem;
 }
 
+/* Override para el precio en modo oscuro para mejor contraste */
+body.dark-mode .weekly-price {
+    color: #cbd5e1;
+}
+
 .weekly-cta {
-    color: #f59e0b; /* Dorado */
+    color: #f59e0b; /* Dorado siempre */
     font-weight: 700;
     font-size: 1.2rem;
-    margin: 0 0 20px 0; /* Espacio antes del botón */
+    margin: 0 0 20px 0;
     text-transform: uppercase;
 }
 
 .weekly-btn {
     background: #f59e0b !important;
     border: none !important;
-    color: white;
+    color: white !important; /* Siempre blanco */
     padding: 12px 30px;
     font-weight: 700;
     font-size: 0.95rem;
     border-radius: 6px;
     box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
-    width: fit-content; /* El botón se ajusta al texto, no ancho completo */
+    width: fit-content;
+    transition: all 0.3s ease;
 }
 
 .weekly-btn:hover {
@@ -856,21 +877,20 @@ body.dark-mode input:focus {
 }
 
 /* --- RESPONSIVE (Móvil) --- */
-/* En celular, volvemos a poner la imagen arriba y texto abajo para que quepa */
 @media (max-width: 700px) {
     .weekly-content {
         flex-direction: column;
         text-align: center;
-        padding-top: 40px; /* Espacio para el badge si queda arriba */
+        padding-top: 40px;
     }
     .weekly-img {
         width: 100%;
         max-width: 280px;
     }
     .weekly-info-col {
-        align-items: center; /* Centrar items en columna */
+        align-items: center;
     }
     .weekly-btn {
-        width: 100%; /* Botón ancho en móvil */
+        width: 100%;
     }
 }
