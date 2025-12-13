@@ -13,7 +13,6 @@ function lanzarConfeti() {
     if (!window.confetti) return;
     var end = Date.now() + (2 * 1000);
     var colors = ['#2563eb', '#a855f7', '#ffffff'];
-
     (function frame() {
         confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 }, colors: colors });
         confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 }, colors: colors });
@@ -41,7 +40,6 @@ window.copiarDato = (texto, btnElement) => {
 /* --- LÓGICA PRINCIPAL DE LA TIENDA --- */
 export function initStorePage(config) {
     const { platformName, budgetRefString, statusRefString } = config;
-
     const saldoRef = ref(db, budgetRefString);
     const estadoRef = ref(db, statusRefString);
     const SERVICE_ID = EMAIL_CONFIG.SERVICE_ID;
@@ -63,31 +61,26 @@ export function initStorePage(config) {
     initWizard();
 
     // --- LISTENERS BÁSICOS ---
-    if(btnCalc) { btnCalc.addEventListener('click', calcularDescuento); }
+    if(btnCalc) { 
+        btnCalc.addEventListener('click', (e) => {
+            e.preventDefault(); // Evita cualquier salto extraño
+            calcularDescuento();
+        });
+    }
     if(inputRut) { 
         configurarValidacionRut(inputRut, (estado) => { rutEsValido = estado; });
     }
 
-    // --- NUEVO: FORMATEO DE MONEDA EN TIEMPO REAL ---
+    // --- FORMATEO DE MONEDA EN TIEMPO REAL ---
     if(inputPrecio) {
         inputPrecio.addEventListener('input', function(e) {
-            // 1. Eliminar cualquier caracter que no sea número
             let valorLimpio = this.value.replace(/\D/g, '');
-
-            // 2. Si está vacío, limpiar y salir
             if (valorLimpio === '') {
                 this.value = '';
                 return;
             }
-
-            // 3. Convertir a número entero
             const numero = parseInt(valorLimpio, 10);
-
-            // 4. Formatear con separadores de miles (CLP)
-            // Usamos 'es-CL' para que use puntos como separador
             const valorFormateado = new Intl.NumberFormat('es-CL').format(numero);
-
-            // 5. Asignar de nuevo al input con el signo $
             this.value = '$' + valorFormateado;
         });
     }
@@ -192,7 +185,6 @@ export function initStorePage(config) {
                 inputCodigoElem.classList.add('vip-active'); 
             } else {
                 Swal.fire('Código inválido', 'Se aplicará dcto estándar.', 'info');
-                // Si el código falla, mantenemos el 35% si era juego de la semana, o 30% si no.
             }
             
             const precioFinal = Math.round(precio * (1 - descuentoAplicar));
@@ -220,20 +212,31 @@ export function initStorePage(config) {
         // Mensajes de Feedback
         if (esVip) {
             resFinalElem.classList.add('text-vip');
-            Swal.fire({ icon: 'success', title: '¡Código VIP!', text: `Descuento aplicado: ${Math.round(descuentoValor * 100)}%`, timer: 1500, showConfirmButton: false });
+            resFinalElem.style.color = ''; 
+            Swal.fire({ 
+                icon: 'success', 
+                title: '¡Código VIP!', 
+                text: `Descuento aplicado: ${Math.round(descuentoValor * 100)}%`, 
+                timer: 1500, 
+                showConfirmButton: false,
+                returnFocus: false // FIX PARA EL SALTO DE PÁGINA
+            });
+        
         } else if (esJuegoSemana) {
-            // Feedback visual para Juego de la Semana
-            resFinalElem.style.color = '#f59e0b'; // Dorado
+            resFinalElem.classList.remove('text-vip');
+            resFinalElem.style.color = '#f59e0b'; 
             Swal.fire({ 
                 icon: 'success', 
                 title: '🔥 ¡Oferta Especial!', 
                 text: 'Se aplicó un 35% de descuento por ser el Juego de la Semana.',
                 timer: 2000, 
-                showConfirmButton: false 
+                showConfirmButton: false,
+                returnFocus: false // FIX PARA EL SALTO DE PÁGINA
             });
+        
         } else {
             resFinalElem.classList.remove('text-vip');
-            resFinalElem.style.color = ''; // Reset color
+            resFinalElem.style.color = ''; 
         }
 
         const alerta = document.getElementById('alerta-presupuesto');
@@ -269,7 +272,6 @@ export function initStorePage(config) {
 
             Swal.fire({ title: 'Procesando Pedido', html: 'Iniciando sistema...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             const updateStatus = (texto) => { if(Swal.getHtmlContainer()) Swal.getHtmlContainer().textContent = texto; };
-
             try {
                 updateStatus('1/4 Optimizando imagen...');
                 const comprobanteBase64 = await comprimirImagen(inputComprobante.files[0]);
@@ -299,7 +301,6 @@ export function initStorePage(config) {
                             imagen_juego: coverImgSrc,
                             uid: user ? user.uid : null 
                         });
-
                         updateStatus('4/4 Enviando confirmación...');
                         emailjs.sendForm(SERVICE_ID, TEMPLATE_ID, form).then(() => {
                             lanzarConfeti();
@@ -335,7 +336,6 @@ function initWizard() {
     window.showStep = (stepNumber) => {
         document.querySelectorAll('.wizard-step').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.step-indicator').forEach(el => el.classList.remove('active'));
-        
         const stepToShow = document.getElementById(`step-${stepNumber}`);
         if(stepToShow) stepToShow.classList.add('active');
 

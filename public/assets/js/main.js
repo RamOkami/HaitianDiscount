@@ -210,22 +210,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- LÓGICA JUEGO DE LA SEMANA ---
     const weeklySection = document.getElementById('weeklyGameSection');
     
-    // Escuchamos cambios en la base de datos
     onValue(child(ref(db), 'juego_semana'), async (snap) => {
         const data = snap.val();
         
-        window.weeklyGameId = (data && data.activo) ? data.appid : null;
+        window.weeklyGameId = (data && data.activo) ? data.appid : null; 
 
-        // Si no existe o no está activo, ocultamos y salimos
         if (!data || !data.activo || !data.appid) {
             if(weeklySection) weeklySection.style.display = 'none';
             return;
         }
-        
+
         const appId = data.appid;
 
         try {
-            // Usamos la misma lógica de búsqueda que ya tienes (corsproxy)
             const targetUrl = `https://store.steampowered.com/api/appdetails?appids=${appId}&cc=cl`;
             const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
             
@@ -237,23 +234,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 const precio = game.price_overview ? (game.price_overview.final / 100) : 0;
                 const precioFormateado = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(precio);
                 
+                // --- LÓGICA DE IMAGEN PERSONALIZADA ---
+                // Si en la base de datos hay una URL válida, la usamos. Si no, usamos la de Steam.
+                let imagenFinal = game.header_image;
+                if (data.customImage && data.customImage.trim() !== "") {
+                    imagenFinal = data.customImage;
+                }
+                // -------------------------------------
+
                 // Renderizamos el Banner HTML
                 weeklySection.innerHTML = `
                     <div class="weekly-banner" onclick="cargarJuegoSemana('${game.steam_appid}', '${game.name.replace(/'/g, "\\'")}')">
                         <div class="weekly-badge">🔥 JUEGO DE LA SEMANA</div>
                         
                         <div class="weekly-content">
-                            <img src="${game.header_image}" alt="${game.name}" class="weekly-img">
+                            <img src="${imagenFinal}" alt="${game.name}" class="weekly-img">
                             
                             <div class="weekly-info-col">
                                 <h3>${game.name}</h3>
-                                
                                 <p class="weekly-price">
                                     Precio Steam: <span style="text-decoration: line-through; opacity: 0.7;">${precioFormateado}</span>
                                 </p>
-                                
                                 <p class="weekly-cta">¡35% DE DESCUENTO EXTRA!</p>
-                                
                                 <button class="btn btn-primary weekly-btn">Ver Oferta &rarr;</button>
                             </div>
                         </div>
@@ -262,7 +264,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 weeklySection.style.display = 'block';
                 
-                // Agregamos animación de entrada
                 weeklySection.animate([
                     { opacity: 0, transform: 'translateY(20px)' },
                     { opacity: 1, transform: 'translateY(0)' }

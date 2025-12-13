@@ -171,6 +171,64 @@ function iniciarListeners() {
         Swal.fire({ title: '¿Eliminar?', icon: 'warning', showCancelButton: true }).then((r) => { if (r.isConfirmed) remove(child(vipRef, key)); });
     };
 
+    // --- JUEGO DE LA SEMANA ---
+    const weeklyRef = ref(db, 'juego_semana');
+
+    // 1. Leer datos actuales (Incluyendo la imagen custom)
+    onValue(weeklyRef, (snap) => {
+        const data = snap.val();
+        const inputAppId = document.getElementById('weeklyAppId');
+        const inputCustomImg = document.getElementById('weeklyCustomImg');
+        const checkActive = document.getElementById('weeklyActive');
+        
+        if (data) {
+            if(inputAppId) inputAppId.value = data.linkOriginal || `https://store.steampowered.com/app/${data.appid}/`;
+            if(inputCustomImg) inputCustomImg.value = data.customImage || '';
+            if(checkActive) checkActive.checked = data.activo || false;
+        }
+    });
+
+    // 2. Guardar cambios
+    const btnSave = document.getElementById('btnSaveWeekly');
+    if (btnSave) {
+        btnSave.addEventListener('click', () => {
+            const inputUrl = document.getElementById('weeklyAppId').value.trim();
+            const customImgUrl = document.getElementById('weeklyCustomImg').value.trim();
+            const activo = document.getElementById('weeklyActive').checked;
+
+            if (!inputUrl) {
+                Swal.fire('Error', 'Debes pegar un link de Steam', 'error');
+                return;
+            }
+
+            const regex = /app\/(\d+)/;
+            const match = inputUrl.match(regex);
+
+            if (!match) {
+                Swal.fire('Link inválido', 'El link no contiene un ID de Steam válido', 'warning');
+                return;
+            }
+
+            const appId = match[1];
+
+            // Guardamos todo en Firebase
+            set(weeklyRef, {
+                appid: appId,
+                linkOriginal: inputUrl,
+                customImage: customImgUrl,
+                activo: activo,
+                updatedAt: new Date().toISOString()
+            })
+            .then(() => {
+                Swal.fire({ icon: 'success', title: '¡Guardado!', text: 'Configuración actualizada.' });
+            })
+            .catch((error) => {
+                console.error(error);
+                Swal.fire('Error', 'Error al guardar: ' + error.message, 'error');
+            });
+        });
+    }
+
     // --- PEDIDOS ---
     const ordenesRef = ref(db, 'ordenes');
     let todasLasOrdenes = [];
@@ -455,65 +513,6 @@ function iniciarListeners() {
     window.borrarOrden = (id) => {
         Swal.fire({ title: '¿Borrar?', text: "Se perderá el registro.", icon: 'warning', showCancelButton: true }).then((r) => { if (r.isConfirmed) remove(child(ordenesRef, id)); });
     };
-
-
-    // --- JUEGO DE LA SEMANA ---
-    const weeklyRef = ref(db, 'juego_semana');
-
-    // 1. Leer datos actuales
-    onValue(weeklyRef, (snap) => {
-        const data = snap.val();
-        const inputAppId = document.getElementById('weeklyAppId');
-        const checkActive = document.getElementById('weeklyActive');
-        
-        if (data && inputAppId && checkActive) {
-            // Si guardamos el link original, lo mostramos. Si no, mostramos el ID
-            inputAppId.value = data.linkOriginal || `https://store.steampowered.com/app/${data.appid}/`;
-            checkActive.checked = data.activo || false;
-        }
-    });
-
-    // 2. Guardar cambios (CON MEJOR VALIDACIÓN)
-    const btnSave = document.getElementById('btnSaveWeekly');
-    if (btnSave) {
-        btnSave.addEventListener('click', () => {
-            const inputUrl = document.getElementById('weeklyAppId').value.trim();
-            const activo = document.getElementById('weeklyActive').checked;
-
-            if (!inputUrl) {
-                Swal.fire('Error', 'Debes pegar un link de Steam', 'error');
-                return;
-            }
-
-            // EXTRACCIÓN ROBUSTA: Busca "/app/" seguido de números
-            const regex = /app\/(\d+)/;
-            const match = inputUrl.match(regex);
-
-            if (!match) {
-                Swal.fire('Link inválido', 'El link no contiene un ID de Steam válido (/app/números)', 'warning');
-                return;
-            }
-
-            const appId = match[1];
-
-            // Guardamos
-            set(weeklyRef, {
-                appid: appId,
-                linkOriginal: inputUrl,
-                activo: activo,
-                updatedAt: new Date().toISOString()
-            })
-            .then(() => {
-                Swal.fire({ icon: 'success', title: '¡Guardado!', text: 'Juego de la semana actualizado.' });
-            })
-            .catch((error) => {
-                console.error(error);
-                Swal.fire('Error', 'No se pudo guardar en Firebase: ' + error.message, 'error');
-            });
-        });
-    } else {
-        console.error("No se encontró el botón btnSaveWeekly");
-    }
 }
 
 const tabs = document.querySelectorAll('.tab-btn');
