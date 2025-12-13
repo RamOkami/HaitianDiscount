@@ -1,6 +1,5 @@
 /* ARCHIVO: public/assets/js/encuesta.js */
-import { ref, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-// Al estar en la misma carpeta 'assets/js', importamos config.js directamente
+import { ref, update, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 import { db } from './config.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -65,7 +64,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 const timestamp = new Date().toISOString();
 
                 try {
-                    // 1. Guardar en la orden privada (Como antes)
+                    // --- PASO 1: OBTENER EL NOMBRE REAL ---
+                    // Consultamos la orden para saber quién la hizo antes de guardar
+                    const orderRef = ref(db, `ordenes/${orderId}`);
+                    const snapshot = await get(orderRef);
+                    
+                    let nombreCliente = "Cliente Verificado"; // Valor por defecto
+
+                    if (snapshot.exists()) {
+                        const data = snapshot.val();
+                        // Lógica de Prioridad: 
+                        // 1. Usar el campo 'nombre' si existe
+                        // 2. Si no, usar la primera parte del email
+                        if (data.nombre && data.nombre.trim().length > 0) {
+                            nombreCliente = data.nombre;
+                        } else if (data.email) {
+                            nombreCliente = data.email.split('@')[0];
+                        }
+                    }
+
+                    // --- PASO 2: GUARDAR FEEDBACK ---
                     const feedbackRef = ref(db, `ordenes/${orderId}/feedback`);
                     const publicFeedbackRef = ref(db, `feedbacks_publicos/${orderId}`);
 
@@ -79,14 +97,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Actualizamos la orden privada
                     await update(feedbackRef, feedbackData);
 
-                    // 2. NUEVO: Guardar copia en lista pública (Sin datos sensibles)
-                    // Nota: Usamos "Anónimo" o el nombre si pudiéramos obtenerlo, 
-                    // para la versión pública simplificada usaremos un identificador genérico seguro.
+                    // Guardamos copia pública con el NOMBRE REAL recuperado
                     await update(publicFeedbackRef, {
                         rating: rating,
                         comment: comment,
                         fecha: timestamp,
-                        cliente: "Cliente Verificado" // Opcional: podrías pasar el nombre por URL si quisieras
+                        cliente: nombreCliente 
                     });
 
                     feedbackContent.style.display = 'none';
