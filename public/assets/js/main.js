@@ -1,7 +1,7 @@
 /* ARCHIVO: assets/js/main.js */
 import { initStorePage } from './storeLogic.js';
 import { db, auth } from './config.js';
-import { ref, set, get, remove, child, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { ref, set, get, remove, child, onValue, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 // 1. INICIALIZAMOS LA LÓGICA COMPARTIDA
 initStorePage({
@@ -262,41 +262,78 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => { btnBuscar.click(); }, 600);
         }
     };
-
-    // --- EFECTO 3D ---
-    if (previewContainer && cardWrapper && gameCoverImg) {
-        previewContainer.addEventListener('mousemove', (e) => {
-            const rect = previewContainer.getBoundingClientRect();
-            const width = rect.width;
-            const height = rect.height;
-            const mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
-
-            const maxRotation = 25; 
-            let rotateY = ((mouseX - width / 2) / (width / 2)) * maxRotation;
-            let rotateX = ((mouseY - height / 2) / (height / 2)) * -maxRotation;
-
-            rotateX = Math.max(-maxRotation, Math.min(maxRotation, rotateX));
-            rotateY = Math.max(-maxRotation, Math.min(maxRotation, rotateY));
-
-            const bgX = (mouseX / width) * 100;
-            const bgY = (mouseY / height) * 100;
-
-            requestAnimationFrame(() => {
-                cardWrapper.style.setProperty('--rotate-x', `${rotateX}deg`);
-                cardWrapper.style.setProperty('--rotate-y', `${rotateY}deg`);
-                cardWrapper.style.setProperty('--bg-x', `${bgX}%`);
-                cardWrapper.style.setProperty('--bg-y', `${bgY}%`);
-                cardWrapper.style.setProperty('--show-shine', '1');
-            });
-        });
-
-        previewContainer.addEventListener('mouseleave', () => {
-            requestAnimationFrame(() => {
-                cardWrapper.style.setProperty('--rotate-x', '0deg');
-                cardWrapper.style.setProperty('--rotate-y', '0deg');
-                cardWrapper.style.setProperty('--show-shine', '0');
-            });
-        });
-    }
 });
+
+// =========================================
+// >>> NUEVA LÓGICA DE CARGA DE FEEDBACK <<<
+// =========================================
+
+async function loadFeedback() {
+    const feedbackContainer = document.getElementById('feedback-container');
+    
+    // Consulta para obtener solo las órdenes con feedback_recibido: true
+    const feedbackQuery = query(
+        ref(db, 'ordenes'), // Usar 'db'
+        orderByChild('feedback/feedback_recibido'),
+        equalTo(true)
+    );
+
+    try {
+        const snapshot = await get(feedbackQuery);
+        if (snapshot.exists()) {
+            let feedbackHTML = '';
+            
+            const feedbacks = [];
+            snapshot.forEach((childSnapshot) => {
+                const orderData = childSnapshot.val();
+                if (orderData.feedback && orderData.feedback.comment) {
+                    feedbacks.push(orderData);
+                }
+            });
+            
+            // Ordenar por fecha_feedback descendente (más reciente primero)
+            feedbacks.sort((a, b) => new Date(b.feedback.fecha_feedback) - new Date(a.feedback.fecha_feedback));
+            
+            const feedbacksToShow = feedbacks.slice(0, 4); // Mostrar solo los 4 más recientes
+
+            feedbacksToShow.forEach((orderData) => {
+                const feedback = orderData.feedback;
+                
+                // Generar las estrellas 
+                const rating = feedback.rating || 5; 
+                const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+                
+                // Formatear la fecha
+                const dateString = feedback.fecha_feedback || orderData.fecha_completo;
+                // Intentamos un formato de fecha seguro (YYYY-MM-DD)
+                const safeDateString = dateString ? dateString.split('T')[0] : '';
+                const formattedDate = safeDateString || 'Fecha Desconocida';
+                
+                // Identificador del cliente (ej. la parte del email antes del @)
+                const clientIdentifier = orderData.email ? orderData.email.split('@')[0] : 'Cliente Anónimo'; 
+                
+                feedbackHTML += `
+                    <div class="feedback-card">
+                        <div class="rating">${stars}</div>
+                        <p class="feedback-text">"${feedback.comment}"</p>
+                        <div class="client-info">
+                            <span class="client-name">${clientIdentifier}</span>
+                            <span class="client-date">${formattedDate}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            feedbackContainer.innerHTML = feedbackHTML;
+            
+        } else {
+            feedbackContainer.innerHTML = '<p style="text-align: center; color: var(--text-light);">Aún no tenemos valoraciones de clientes. ¡Sé el primero!</p>';
+        }
+    } catch (error) {
+        console.error("Error al cargar el feedback:", error);
+        feedbackContainer.innerHTML = '<p style="text-align: center; color: var(--danger);">Lo sentimos, no pudimos cargar las opiniones en este momento.</p>';
+    }
+}
+
+// Llama a la función cuando el DOM esté cargado
+document.addEventListener('DOMContentLoaded', loadFeedback);
