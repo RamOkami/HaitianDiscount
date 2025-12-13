@@ -1,7 +1,9 @@
 /* ARCHIVO: assets/js/main.js */
 import { initStorePage } from './storeLogic.js';
 import { db, auth } from './config.js';
-import { ref, set, get, remove, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { ref, set, get, remove, child, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+// 1. INICIALIZAMOS LA LÓGICA COMPARTIDA...
 
 // 1. INICIALIZAMOS LA LÓGICA COMPARTIDA (Presupuesto, Confeti, Auth, etc.)
 initStorePage({
@@ -203,5 +205,86 @@ document.addEventListener('DOMContentLoaded', () => {
             btnBuscarSteam.click();
         }, 500);
     }
+
+
+    // --- LÓGICA JUEGO DE LA SEMANA ---
+    const weeklySection = document.getElementById('weeklyGameSection');
+    
+    // Escuchamos cambios en la base de datos
+    onValue(child(ref(db), 'juego_semana'), async (snap) => {
+        const data = snap.val();
+        
+        window.weeklyGameId = (data && data.activo) ? data.appid : null;
+
+        // Si no existe o no está activo, ocultamos y salimos
+        if (!data || !data.activo || !data.appid) {
+            if(weeklySection) weeklySection.style.display = 'none';
+            return;
+        }
+        
+        const appId = data.appid;
+
+        try {
+            // Usamos la misma lógica de búsqueda que ya tienes (corsproxy)
+            const targetUrl = `https://store.steampowered.com/api/appdetails?appids=${appId}&cc=cl`;
+            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+            
+            const response = await fetch(proxyUrl);
+            const steamData = await response.json();
+
+            if (steamData[appId] && steamData[appId].success) {
+                const game = steamData[appId].data;
+                const precio = game.price_overview ? (game.price_overview.final / 100) : 0;
+                const precioFormateado = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(precio);
+                
+                // Renderizamos el Banner HTML
+                weeklySection.innerHTML = `
+                    <div class="weekly-banner" onclick="cargarJuegoSemana('${game.steam_appid}', '${game.name.replace(/'/g, "\\'")}')">
+                        <div class="weekly-badge">🔥 JUEGO DE LA SEMANA</div>
+                        <div class="weekly-content">
+                            <img src="${game.header_image}" alt="${game.name}" class="weekly-img">
+                            <div class="weekly-info">
+                                <h3>${game.name}</h3>
+                                <p class="weekly-price">Precio Steam: <span style="text-decoration: line-through; opacity: 0.7;">${precioFormateado}</span></p>
+                                <p class="weekly-cta">¡Cotízalo con descuento ahora!</p>
+                            </div>
+                            <button class="btn btn-primary weekly-btn">Ver Oferta &rarr;</button>
+                        </div>
+                    </div>
+                `;
+                
+                weeklySection.style.display = 'block';
+                
+                // Agregamos animación de entrada
+                weeklySection.animate([
+                    { opacity: 0, transform: 'translateY(20px)' },
+                    { opacity: 1, transform: 'translateY(0)' }
+                ], { duration: 500, easing: 'ease-out' });
+            }
+
+        } catch (error) {
+            console.error("Error cargando juego de la semana:", error);
+            weeklySection.style.display = 'none';
+        }
+    });
+
+    // Función global para cuando hacen click en el banner
+    window.cargarJuegoSemana = (appId, nombre) => {
+        // 1. Poner link en el input
+        const inputUrl = document.getElementById('steamUrlInput');
+        const btnBuscar = document.getElementById('btnBuscarSteam');
+        
+        if(inputUrl && btnBuscar) {
+            inputUrl.value = `https://store.steampowered.com/app/${appId}/`;
+            
+            // 2. Scroll suave hacia el formulario
+            document.getElementById('pedido').scrollIntoView({ behavior: 'smooth' });
+            
+            // 3. Ejecutar búsqueda automáticamente
+            setTimeout(() => {
+                btnBuscar.click();
+            }, 600);
+        }
+    };
 
 });

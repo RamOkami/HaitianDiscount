@@ -749,3 +749,97 @@ body.dark-mode input:focus {
     color: #166534;
     border-color: #166534;
 }
+
+/* --- ESTILOS JUEGO DE LA SEMANA --- */
+.weekly-banner {
+    background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%); /* Fondo oscuro elegante */
+    border: 2px solid #f59e0b; /* Borde Dorado */
+    border-radius: var(--radius);
+    padding: 0;
+    position: relative;
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 10px 30px rgba(245, 158, 11, 0.15); /* Resplandor dorado */
+}
+
+.weekly-banner:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(245, 158, 11, 0.25);
+}
+
+.weekly-badge {
+    background: #f59e0b;
+    color: white;
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    padding: 5px 15px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-bottom-right-radius: 12px;
+    z-index: 2;
+    letter-spacing: 1px;
+}
+
+.weekly-content {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+}
+
+.weekly-img {
+    width: 200px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.weekly-info {
+    flex: 1;
+    text-align: left;
+}
+
+.weekly-info h3 {
+    margin: 0 0 5px 0;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.weekly-price {
+    color: #cbd5e1;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.weekly-cta {
+    color: #f59e0b;
+    font-weight: 700;
+    margin-top: 5px;
+}
+
+.weekly-btn {
+    background: #f59e0b !important; /* Botón naranja */
+    border: none !important;
+    color: white;
+    padding: 10px 20px;
+}
+
+/* Modo Responsive */
+@media (max-width: 600px) {
+    .weekly-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    .weekly-info {
+        text-align: center;
+    }
+    .weekly-img {
+        width: 100%;
+        max-width: 280px;
+    }
+    .weekly-btn {
+        width: 100%;
+    }
+}

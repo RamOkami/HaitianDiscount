@@ -141,13 +141,12 @@ export function initStorePage(config) {
         }
     });
 
-    // --- CÁLCULO (ACTUALIZADO PARA LEER FORMATO MONEDA) ---
+    // --- CÁLCULO (ACTUALIZADO CON JUEGO DE LA SEMANA) ---
     function calcularDescuento() {
         if (!tiendaAbierta) return;
-        
-        // 1. OBTENER VALOR LIMPIO (Quitar $ y puntos)
-        const valorRaw = inputPrecio.value.replace(/\D/g, ''); 
-        
+
+        // 1. OBTENER VALOR LIMPIO
+        const valorRaw = inputPrecio.value.replace(/\D/g, '');
         const codigoInput = document.getElementById('codigoInvitado').value.trim().toUpperCase(); 
         const inputCodigoElem = document.getElementById('codigoInvitado'); 
         inputCodigoElem.classList.remove('vip-active');
@@ -157,37 +156,56 @@ export function initStorePage(config) {
             return;
         }
 
-        const precio = parseInt(valorRaw, 10); // Usamos el valor limpio
-        const DESCUENTO_BASE = 0.30;
+        const precio = parseInt(valorRaw, 10);
+        
+        // --- LÓGICA DE DESCUENTO BASE ---
+        let descuentoAplicar = 0.30; // 30% por defecto
+        let esJuegoSemana = false;
 
+        // Verificamos si es el Juego de la Semana (Solo Steam)
+        if (platformName === 'Steam' && window.weeklyGameId) {
+            const steamLink = document.getElementById('steamUrlInput').value;
+            // Extraemos el ID del link que puso el usuario
+            const match = steamLink.match(/app\/(\d+)/);
+            if (match && match[1] === window.weeklyGameId) {
+                descuentoAplicar = 0.35; // ¡35% DE DESCUENTO!
+                esJuegoSemana = true;
+            }
+        }
+
+        // --- CÓDIGO VIP (Sobrescribe si existe) ---
         if (codigoInput === "") {
-            const precioFinal = Math.round(precio * (1 - DESCUENTO_BASE));
-            mostrarResultadosUI(precio, precioFinal, false);
+            const precioFinal = Math.round(precio * (1 - descuentoAplicar));
+            mostrarResultadosUI(precio, precioFinal, false, descuentoAplicar, esJuegoSemana);
             return; 
         }
 
         Swal.fire({ title: 'Verificando...', didOpen: () => Swal.showLoading() });
-
+        
         get(child(ref(db), `codigos_vip/${codigoInput}`)).then((snapshot) => {
             Swal.close();
-            let descuento = DESCUENTO_BASE;
             let esVip = false;
+            
             if (snapshot.exists()) {
-                descuento = snapshot.val(); 
+                descuentoAplicar = snapshot.val(); // El VIP manda sobre el juego de la semana
                 esVip = true;
                 inputCodigoElem.classList.add('vip-active'); 
             } else {
                 Swal.fire('Código inválido', 'Se aplicará dcto estándar.', 'info');
+                // Si el código falla, mantenemos el 35% si era juego de la semana, o 30% si no.
             }
-            const precioFinal = Math.round(precio * (1 - descuento));
-            mostrarResultadosUI(precio, precioFinal, esVip, descuento);
+            
+            const precioFinal = Math.round(precio * (1 - descuentoAplicar));
+            mostrarResultadosUI(precio, precioFinal, esVip, descuentoAplicar, esJuegoSemana);
+            
         }).catch(() => {
             Swal.close();
             Swal.fire('Error', 'No se pudo verificar código.', 'error');
         });
     }
 
-    function mostrarResultadosUI(precioOriginal, precioFinal, esVip, descuentoValor = 0.30) {
+    // Actualizamos la UI para mostrar mensaje especial
+    function mostrarResultadosUI(precioOriginal, precioFinal, esVip, descuentoValor, esJuegoSemana) {
         const resultadoDiv = document.getElementById('resultado');
         resultadoDiv.style.display = 'block'; 
         
@@ -199,11 +217,23 @@ export function initStorePage(config) {
         resFinalElem.innerText = formatoDinero(precioFinal);
         if(inputPrecioFinal) inputPrecioFinal.value = formatoDinero(precioFinal);
 
+        // Mensajes de Feedback
         if (esVip) {
             resFinalElem.classList.add('text-vip');
-            Swal.fire({ icon: 'success', title: '¡Código VIP!', text: `Descuento: ${Math.round(descuentoValor * 100)}%`, timer: 1500, showConfirmButton: false });
+            Swal.fire({ icon: 'success', title: '¡Código VIP!', text: `Descuento aplicado: ${Math.round(descuentoValor * 100)}%`, timer: 1500, showConfirmButton: false });
+        } else if (esJuegoSemana) {
+            // Feedback visual para Juego de la Semana
+            resFinalElem.style.color = '#f59e0b'; // Dorado
+            Swal.fire({ 
+                icon: 'success', 
+                title: '🔥 ¡Oferta Especial!', 
+                text: 'Se aplicó un 35% de descuento por ser el Juego de la Semana.',
+                timer: 2000, 
+                showConfirmButton: false 
+            });
         } else {
             resFinalElem.classList.remove('text-vip');
+            resFinalElem.style.color = ''; // Reset color
         }
 
         const alerta = document.getElementById('alerta-presupuesto');
