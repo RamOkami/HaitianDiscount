@@ -1,7 +1,7 @@
 /* ARCHIVO: public/assets/js/eneba.js */
 import { initStorePage } from './storeLogic.js';
 import { db, auth } from './config.js';
-import { ref, set, get, remove, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { ref, set, get, remove, child, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 // 1. Inicializamos la lógica base
 initStorePage({
@@ -273,3 +273,64 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// =========================================
+// >>> NUEVA LÓGICA DE CARGA DE FEEDBACK <<<
+// =========================================
+
+async function loadFeedback() {
+    const feedbackContainer = document.getElementById('feedback-container');
+    
+    // NUEVO: Consultamos el nodo público
+    const feedbackQuery = query(
+        ref(db, 'feedbacks_publicos'),
+        orderByChild('fecha'),
+        limitToLast(4) 
+    );
+
+    try {
+        const snapshot = await get(feedbackQuery);
+        if (snapshot.exists()) {
+            let feedbackHTML = '';
+            const feedbacks = [];
+            
+            snapshot.forEach((childSnapshot) => {
+                feedbacks.push(childSnapshot.val());
+            });
+
+            // Revertimos para que el más nuevo salga primero
+            feedbacks.reverse();
+
+            feedbacks.forEach((feedback) => {
+                const rating = feedback.rating || 5; 
+                const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+                
+                const dateString = feedback.fecha || '';
+                const safeDateString = dateString ? dateString.split('T')[0] : '';
+                
+                const clientName = feedback.cliente || 'Cliente HaitianDiscount';
+                
+                feedbackHTML += `
+                    <div class="feedback-card">
+                        <div class="rating">${stars}</div>
+                        <p class="feedback-text">"${feedback.comment}"</p>
+                        <div class="client-info">
+                            <span class="client-name">${clientName}</span>
+                            <span class="client-date">${safeDateString}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            feedbackContainer.innerHTML = feedbackHTML;
+            
+        } else {
+            feedbackContainer.innerHTML = '<p style="text-align: center; color: var(--text-light);">Aún no tenemos valoraciones de clientes. ¡Sé el primero!</p>';
+        }
+    } catch (error) {
+        console.error("Error al cargar el feedback:", error);
+        feedbackContainer.innerHTML = '<p style="text-align: center; color: var(--text-light);">Cargando opiniones...</p>';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadFeedback);
