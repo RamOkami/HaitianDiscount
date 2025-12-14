@@ -15,6 +15,7 @@ Directory structure:
     │   │   │   ├── admin.css
     │   │   │   ├── encuesta.css
     │   │   │   ├── perfil.css
+    │   │   │   ├── shared_wishlist.css
     │   │   │   └── style.css
     │   │   └── js/
     │   │       ├── admin.js
@@ -23,11 +24,13 @@ Directory structure:
     │   │       ├── eneba.js
     │   │       ├── main.js
     │   │       ├── perfil.js
+    │   │       ├── shared_wishlist.js
     │   │       └── storeLogic.js
     │   └── pages/
     │       ├── admin.html
     │       ├── encuesta.html
-    │       └── perfil.html
+    │       ├── perfil.html
+    │       └── shared_wishlist.html
     └── .github/
         └── workflows/
             ├── firebase-hosting-merge.yml
