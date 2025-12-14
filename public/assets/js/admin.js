@@ -283,21 +283,31 @@ function iniciarListeners() {
             const platStyle = plat === 'Eneba' ? 'color: #a855f7;' : 'color: #2563eb;';
             const tieneKey = orden.game_key ? '<span title="Key Entregada">🔑</span>' : '';
 
-            // BOTÓN VER FOTO: Estilo pildora, centrado
+            // --- LÓGICA DE REGALO (ADMIN) ---
+            let giftBadge = '';
+            let giftInfo = '';
+            // Detectamos si en 'detalles' dice "Regalo"
+            if (orden.detalles && orden.detalles.toLowerCase().includes('regalo')) {
+                giftBadge = '<span style="background:#f59e0b; color:white; padding:2px 6px; border-radius:4px; font-size:0.7rem; margin-left:5px;">🎁 REGALO</span>';
+                giftInfo = `<div style="font-size: 0.75rem; color: #f59e0b; font-weight:bold; margin-top:2px;">${orden.detalles}</div>`;
+            } else if (orden.detalles) {
+                // Si hay detalles normales, también los mostramos
+                giftInfo = `<div style="font-size: 0.75rem; color: var(--text-light); margin-top:2px;">Nota: ${orden.detalles}</div>`;
+            }
+            // -------------------------------
+
+            // BOTÓN VER FOTO
             let btnComprobante = '<span style="color:#ccc; font-size:0.7rem; display:block; margin-top:4px;">Sin foto</span>';
             if(orden.comprobante_img) {
                 window.imagenesComprobantes[orden.id] = orden.comprobante_img;
                 btnComprobante = `<button class="btn-foto" onclick="verComprobante('${orden.id}')">Ver Foto</button>`;
             }
 
-            // BOTONES DE ACCIÓN: CENTRADOS
+            // BOTONES DE ACCIÓN
             let actionBtnsHtml = `<button class="btn btn-danger btn-sm" onclick="borrarOrden('${orden.id}')" title="Borrar">X</button>`;
-            
             if (plat === 'Eneba' && estado !== 'cancelado') {
                 actionBtnsHtml = `
-                    <button class="btn btn-sm" style="background: #a855f7; color: white; border:none;" onclick="iniciarEntregaKey('${orden.id}')" title="Entregar Key">
-                        🔑
-                    </button>
+                    <button class="btn btn-sm" style="background: #a855f7; color: white; border:none;" onclick="iniciarEntregaKey('${orden.id}')" title="Entregar Key">🔑</button>
                     ${actionBtnsHtml}
                 `;
             }
@@ -313,9 +323,9 @@ function iniciarListeners() {
                     </td>
                     <td class="col-juego">
                         <div class="cell-content">
-                            <div style="${platStyle} font-weight: bold; font-size: 0.75rem; margin-bottom:2px;">${plat.toUpperCase()} ${tieneKey}</div>
+                            <div style="${platStyle} font-weight: bold; font-size: 0.75rem; margin-bottom:2px;">${plat.toUpperCase()} ${tieneKey} ${giftBadge}</div>
                             <div class="text-primary" title="${orden.juego}">${orden.juego}</div>
-                        </div>
+                            ${giftInfo} </div>
                     </td>
                     <td class="col-precio">
                         <div style="font-weight:bold; font-size:0.95rem;">${monto}</div>

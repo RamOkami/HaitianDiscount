@@ -49,6 +49,12 @@ onAuthStateChanged(auth, (user) => {
             avatarImg.src = user.photoURL;
         }
 
+        if (user.photoURL) {
+            update(ref(db, 'usuarios/' + user.uid), {
+                photoURL: user.photoURL
+            });
+        }
+
         const adminCheckRef = ref(db, `admins/${user.uid}`);
         get(adminCheckRef).then((snapshot) => {
             if (snapshot.exists() && snapshot.val() === true) {
@@ -64,6 +70,25 @@ onAuthStateChanged(auth, (user) => {
         cargarHistorial(user.uid);
         cargarDatosUsuario(user.uid);
         cargarWishlist(user.uid);
+
+        // LÓGICA LINK COMPARTIDO
+        const shareInput = document.getElementById('shareLinkInput');
+        const btnCopyShare = document.getElementById('btnCopyShareLink');
+        
+        if(shareInput && user) {
+            // Construimos la URL apuntando a la nueva página pública
+            const currentUrl = window.location.origin + window.location.pathname.replace('perfil.html', '');
+            const publicUrl = `${currentUrl}shared_wishlist.html?u=${user.uid}`;
+            shareInput.value = publicUrl;
+
+            btnCopyShare.onclick = () => {
+                navigator.clipboard.writeText(publicUrl).then(() => {
+                    const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+                    Toast.fire({ icon: 'success', title: '¡Enlace copiado!' });
+                });
+            };
+        }
+
         btnSaveData.onclick = () => guardarDatosUsuario(user.uid);
 
     } else {
@@ -277,38 +302,126 @@ tabs.forEach(tab => {
     });
 });
 
+let wishlistDataGlobal = {}; // Variable para guardar datos y filtrar localmente
+let currentFilter = 'eneba'; // Por defecto mostramos Eneba primero (para incentivar regalos)
+
 function cargarWishlist(uid) {
     const wishRef = ref(db, `usuarios/${uid}/wishlist`);
+    
+    // Configurar botones de filtro
+    const btnSteam = document.getElementById('filterSteamBtn');
+    const btnEneba = document.getElementById('filterEnebaBtn');
+    
+    if(btnSteam && btnEneba) {
+        btnSteam.onclick = () => aplicarFiltro('steam', btnSteam, btnEneba);
+        btnEneba.onclick = () => aplicarFiltro('eneba', btnEneba, btnSteam);
+        
+        // Estado inicial visual
+        aplicarFiltro('eneba', btnEneba, btnSteam);
+    }
+
     onValue(wishRef, (snapshot) => {
-        const wishlistBody = document.getElementById('wishlistBody');
-        const noWishMsg = document.getElementById('noWishlistMsg');
-        if(!wishlistBody) return; 
-        wishlistBody.innerHTML = '';
-        const data = snapshot.val();
-        if (!data) {
-            noWishMsg.style.display = 'block';
-            return;
-        }
-        noWishMsg.style.display = 'none';
-        Object.entries(data).forEach(([gameId, item]) => {
-            const row = `
-                <tr>
-                    <td style="text-align:center;">
-                         <img src="${item.imagen}" class="game-thumb-profile" alt="Cover">
-                    </td>
-                    <td>
-                        <div style="font-weight:700; color:var(--primary);">${item.nombre}</div>
-                        <a href="${item.url}" target="_blank" style="font-size:0.8rem; color:var(--text-light); text-decoration: underline;">Ver en Steam</a>
-                    </td>
-                    <td>
-                        <button onclick="irAComprar('${item.url}')" class="btn btn-primary btn-sm" style="margin-right:5px; background-color: var(--accent); border: none;">Comprar Ahora</button>
-                        <button onclick="borrarDeseado('${uid}', '${gameId}')" class="btn btn-secondary btn-sm" style="color:var(--danger); border-color:var(--danger);">X</button>
-                    </td>
-                </tr>
-            `;
-            wishlistBody.innerHTML += row;
-        });
+        wishlistDataGlobal = snapshot.val() || {};
+        renderizarWishlist(); // Renderizar con el filtro actual
     });
+}
+
+function aplicarFiltro(tipo, btnActivo, btnInactivo) {
+    currentFilter = tipo;
+    
+    // --- 1. Estilos de botones (Lo que ya tenías) ---
+    btnActivo.classList.remove('btn-secondary');
+    btnActivo.classList.add('btn-primary');
+    
+    if(tipo === 'steam') {
+        btnActivo.style.background = '#2563eb'; 
+        btnActivo.style.color = 'white';
+        btnInactivo.style.background = 'transparent';
+        btnInactivo.style.color = '#a855f7'; 
+        btnInactivo.style.borderColor = '#a855f7';
+    } else {
+        btnActivo.style.background = '#a855f7'; 
+        btnActivo.style.color = 'white';
+        btnInactivo.style.background = 'transparent';
+        btnInactivo.style.color = '#2563eb'; 
+        btnInactivo.style.borderColor = '#2563eb';
+    }
+    
+    btnInactivo.classList.remove('btn-primary');
+    btnInactivo.classList.add('btn-secondary');
+
+    // --- 2. Controlar Link de Compartir ---
+    const shareBox = document.getElementById('shareBoxContainer');
+    if(shareBox) {
+        shareBox.style.display = (tipo === 'eneba') ? 'block' : 'none';
+    }
+
+    // --- 3. NUEVO: CAMBIAR FORMATO DE LA TABLA A VERTICAL ---
+    const table = document.getElementById('wishlistTable');
+    if (table) {
+        if (tipo === 'eneba') {
+            table.classList.add('vertical-mode'); // Activa fotos verticales
+        } else {
+            table.classList.remove('vertical-mode'); // Vuelve a fotos horizontales (Steam)
+        }
+    }
+    // -------------------------------------------------------
+
+    renderizarWishlist();
+}
+
+function renderizarWishlist() {
+    const wishlistBody = document.getElementById('wishlistBody');
+    const noWishMsg = document.getElementById('noWishlistMsg');
+    const uid = auth.currentUser ? auth.currentUser.uid : null;
+
+    if(!wishlistBody) return;
+    
+    wishlistBody.innerHTML = '';
+    let hasItems = false;
+
+    Object.entries(wishlistDataGlobal).forEach(([gameId, item]) => {
+        // Lógica de filtrado
+        const isEnebaLink = item.url.includes('eneba');
+        
+        // Si filtro es 'steam' y el link es eneba -> saltar
+        if (currentFilter === 'steam' && isEnebaLink) return;
+        // Si filtro es 'eneba' y el link NO es eneba -> saltar
+        if (currentFilter === 'eneba' && !isEnebaLink) return;
+
+        hasItems = true;
+
+        // Estilos dinámicos según plataforma
+        const platformText = isEnebaLink ? 'Ver en Eneba' : 'Ver en Steam';
+        const platformColor = isEnebaLink ? '#a855f7' : '#2563eb'; // Morado o Azul
+        const buyBtnColor = isEnebaLink ? 'background-color: #a855f7;' : 'background-color: var(--accent);';
+
+        const row = `
+            <tr>
+                <td style="text-align:center;">
+                     <img src="${item.imagen}" class="game-thumb-profile" alt="Cover" onerror="this.src='../assets/img/logo.png'">
+                </td>
+                <td>
+                    <div style="font-weight:700; color:var(--primary);">${item.nombre}</div>
+                    <a href="${item.url}" target="_blank" style="font-size:0.8rem; color:${platformColor}; text-decoration: underline; font-weight:600;">${platformText}</a>
+                </td>
+                <td>
+                    <button onclick="irAComprar('${item.url}')" class="btn btn-primary btn-sm" style="margin-right:5px; ${buyBtnColor} border: none;">Comprar</button>
+                    <button onclick="borrarDeseado('${uid}', '${gameId}')" class="btn btn-secondary btn-sm" style="color:var(--danger); border-color:var(--danger);">X</button>
+                </td>
+            </tr>
+        `;
+        wishlistBody.innerHTML += row;
+    });
+
+    if (!hasItems) {
+        noWishMsg.style.display = 'block';
+        noWishMsg.innerText = currentFilter === 'steam' 
+            ? 'No tienes juegos de Steam guardados.' 
+            : 'No tienes juegos de Eneba guardados (Agrega algunos para que te regalen).';
+    } else {
+        noWishMsg.style.display = 'none';
+    }
 }
 
 window.irAComprar = (url) => {

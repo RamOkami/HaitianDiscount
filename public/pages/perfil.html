@@ -177,6 +177,32 @@
             </div>
 
             <div id="tab-deseados" class="tab-content">
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 20px; justify-content: center;">
+                    <button id="filterSteamBtn" class="btn btn-secondary btn-sm" style="border-color: #2563eb; color: #2563eb;">
+                        Steam (Personal)
+                    </button>
+                    <button id="filterEnebaBtn" class="btn btn-primary btn-sm" style="background: #a855f7; border-color: #a855f7; color: white;">
+                        Eneba (Regalable)
+                    </button>
+                </div>
+
+                <div id="shareBoxContainer" style="display: none;">
+                    <div class="share-box-minimal">
+                        <div class="share-info">
+                            <span class="share-icon">🎁</span>
+                            <span class="share-label">Link público para amigos:</span>
+                        </div>
+                        <div class="share-actions">
+                            <input type="text" id="shareLinkInput" readonly class="share-input" value="Generando enlace...">
+                            <button id="btnCopyShareLink" class="btn-copy-mini">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                Copiar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="table-responsive">
                     <table id="wishlistTable">
                         <thead>
@@ -189,11 +215,10 @@
                         <tbody id="wishlistBody"></tbody>
                     </table>
                     <div id="noWishlistMsg" style="text-align:center; padding: 40px; display:none; color: var(--text-light);">
-                        Tu lista de deseos está vacía. Ve a Steam y busca un juego.
+                        No hay juegos en esta lista.
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
 

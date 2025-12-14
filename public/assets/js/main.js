@@ -163,12 +163,32 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (e) { console.error(e); }
     }
 
-    // --- AUTOCOMPLETADO + SCROLL (WISHLIST) ---
+    // --- AUTOCOMPLETADO + REGALO (STEAM) ---
     const urlParams = new URLSearchParams(window.location.search);
     const autoLink = urlParams.get('auto');
+    const giftTo = urlParams.get('gift_to'); // <--- Nuevo parámetro
+
     if (autoLink && inputUrlSteam && btnBuscarSteam) {
         inputUrlSteam.value = autoLink;
         
+        // Si es un regalo, pre-llenamos el campo detalles y avisamos
+        if (giftTo) {
+            const inputDetalles = document.getElementById('detalles');
+            if(inputDetalles) {
+                inputDetalles.value = `Regalo para: ${giftTo}`;
+            }
+            
+            // Alerta visual bonita
+            setTimeout(() => {
+                Swal.fire({
+                    title: '🎁 Modo Regalo Activado',
+                    text: `Estás comprando este juego para ${giftTo}. Hemos anotado esto en los detalles del pedido.`,
+                    icon: 'info',
+                    confirmButtonText: '¡Genial!'
+                });
+            }, 1000);
+        }
+
         const seccionPedido = document.getElementById('pedido');
         if (seccionPedido) {
             setTimeout(() => {
@@ -176,7 +196,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 100);
         }
 
+        // Limpiamos la URL para que no moleste
         window.history.replaceState({}, document.title, window.location.pathname);
+        
         setTimeout(() => {
             console.log("Autocompletando compra...");
             btnBuscarSteam.click();

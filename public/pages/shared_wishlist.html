@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Deseos | HaitianDiscount</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="../assets/css/style.css">
+    
+    <link rel="stylesheet" href="../assets/css/shared_wishlist.css">
+    
+    <link rel="shortcut icon" href="../assets/img/logo.png">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="container nav-container">
+            <div class="brand">HaitianDiscount<span class="dot">.</span></div>
+            <ul class="nav-links">
+                <li>
+                    <button id="theme-toggle" class="theme-btn" aria-label="Cambiar modo oscuro">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                    </button>
+                </li>
+                <li>
+                    <a href="../index.html" class="btn btn-sm btn-secondary" style="font-weight: 600;">
+                        Ir al Inicio
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container" style="min-height: 85vh;">
+        
+        <div class="public-header">
+            <div class="profile-avatar-container">
+                <img id="friendAvatar" src="../assets/img/default-avatar.png" class="profile-avatar" 
+                     onerror="this.src='https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'">
+            </div>
+            <h1 class="public-title">Lista de Deseos de <span id="friendName" style="color: var(--accent);">...</span></h1>
+            <p class="public-subtitle">
+                ¡Elige un juego y regálaselo! 🎁<br>
+                Nosotros te entregamos la Key y tu se lo regalas.
+            </p>
+        </div>
+
+        <div id="loading" class="loading-container">
+            <div class="spinner"></div>
+            <p style="color: var(--text-light); font-weight: 500;">Cargando lista de juegos...</p>
+        </div>
+        
+        <div id="wishlistGrid" class="wishlist-grid"></div>
+        
+        <div id="errorMsg" style="display: none; text-align: center; padding: 60px 20px;">
+            <div style="font-size: 3rem; margin-bottom: 10px;">😕</div>
+            <h3 style="color: var(--primary); margin-bottom: 10px;">Enlace no disponible</h3>
+            <p style="color: var(--text-light); max-width: 400px; margin: 0 auto 20px;">
+                El usuario no existe o su lista es privada. Verifica el enlace con tu amigo.
+            </p>
+            <a href="../index.html" class="btn btn-primary" style="display:inline-block;">Volver a HaitianDiscount</a>
+        </div>
+
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 HaitianDiscount. Servicios Digitales.</p>
+            <p class="contact-info">HaitianDiscount@gmail.com</p>
+        </div>
+    </footer>
+
+    <script type="module" src="../assets/js/shared_wishlist.js"></script>
+
+</body>
+</html>

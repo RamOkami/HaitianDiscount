@@ -326,6 +326,7 @@ export function initStorePage(config) {
                             email: form.email.value,
                             rut: form.rut.value, 
                             juego: form.juego.value,
+                            detalles: document.getElementById('detalles') ? document.getElementById('detalles').value : '',
                             precio_pagado: costoCliente,
                             precio_steam: costoOriginal, 
                             estado: 'pendiente',

@@ -1,0 +1,180 @@
+/* =========================================
+   ESTILOS DE LA WISHLIST PÚBLICA
+   ========================================= */
+
+/* Ajuste del contenedor principal para centrar verticalmente si hay poco contenido */
+body {
+    background-color: var(--bg-body);
+    transition: background-color 0.3s ease;
+}
+
+/* Header del Perfil Público */
+.public-header {
+    text-align: center;
+    padding: 60px 20px 40px;
+    animation: fadeInDown 0.5s ease-out;
+}
+
+.profile-avatar-container {
+    width: 110px;
+    height: 110px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    border: 4px solid var(--bg-card);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    background: var(--bg-card);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.profile-avatar-container:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 25px rgba(37, 99, 235, 0.2);
+    border-color: var(--accent);
+}
+
+.profile-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.public-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 10px;
+    letter-spacing: -0.5px;
+}
+
+.public-subtitle {
+    color: var(--text-light);
+    font-size: 1.1rem;
+    max-width: 500px;
+    margin: 0 auto;
+    line-height: 1.5;
+}
+
+/* =========================================
+   GRID Y TARJETAS (FORMATO PÓSTER VERTICAL)
+   Copiar y reemplazar en shared_wishlist.css
+   ========================================= */
+
+/* 1. Grid ajustado para tarjetas más estrechas */
+.wishlist-grid {
+    display: grid;
+    /* Cambiamos minmax de 260px a 190px para acomodar mejor el formato vertical */
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 20px;
+    margin-top: 40px;
+    margin-bottom: 60px;
+    padding: 0 10px;
+}
+
+/* 2. Estilo base de la tarjeta */
+.wish-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px; /* Radio un poco más sutil para posters */
+    overflow: hidden;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    height: 100%; /* Para que todas las tarjetas de la fila tengan la misma altura */
+}
+
+.wish-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.2);
+    border-color: var(--accent);
+    z-index: 2;
+}
+
+/* 3. Contenedor de Imagen (EL CAMBIO IMPORTANTE) */
+.wish-img-container {
+    position: relative;
+    width: 100%;
+    height: auto; 
+    /* Forzamos formato vertical (Póster) */
+    aspect-ratio: 2 / 3; 
+    overflow: hidden;
+    background-color: #1e1e1e; /* Fondo oscuro por si la imagen carga lento */
+    border-bottom: 1px solid var(--border);
+}
+
+.wish-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Recorta la imagen para llenar el póster sin deformar */
+    transition: transform 0.5s ease;
+}
+
+.wish-card:hover .wish-img {
+    transform: scale(1.05); /* Zoom suave al pasar el mouse */
+}
+
+/* 4. Cuerpo de la tarjeta (Datos abajo) */
+.wish-body {
+    padding: 12px; /* Padding reducido para aprovechar espacio */
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Empuja el botón al fondo */
+    gap: 10px;
+}
+
+.wish-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--primary);
+    line-height: 1.3;
+    
+    /* Limitar título a 2 líneas para mantener uniformidad */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 4px;
+}
+
+.wish-platform {
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--text-light);
+    display: inline-block;
+    letter-spacing: 0.5px;
+}
+
+/* Botón de Regalo Ajustado */
+.btn-gift {
+    width: 100%;
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: white;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 10px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2);
+    text-decoration: none;
+    margin-top: auto; /* Asegura que siempre esté al final */
+}
+
+.btn-gift svg {
+    width: 16px;
+    height: 16px;
+}
+
+.btn-gift:hover {
+    background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(245, 158, 11, 0.4);
+}

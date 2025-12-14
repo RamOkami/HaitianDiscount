@@ -323,3 +323,133 @@ body.dark-mode .btn-copy:hover {
     .key-code { width: 100%; }
     .btn-copy { justify-content: center; }
 }
+
+/* --- ESTILO MINIMALISTA PARA COMPARTIR --- */
+.share-box-minimal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(37, 99, 235, 0.05); /* Fondo azul muy sutil */
+    border: 1px dashed var(--accent); /* Borde punteado elegante */
+    border-radius: 8px;
+    padding: 8px 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap; /* Para móviles */
+    gap: 10px;
+}
+
+.share-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.share-icon {
+    font-size: 1.2rem;
+}
+
+.share-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.share-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    justify-content: flex-end;
+    min-width: 250px; /* Asegura espacio para el input */
+}
+
+.share-input {
+    flex: 1;
+    max-width: 300px; /* No deja que se estire demasiado */
+    background: var(--bg-body);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 0.8rem;
+    color: var(--text-light);
+    height: 30px;
+    outline: none;
+}
+
+.btn-copy-mini {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 0 12px;
+    height: 30px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background 0.2s;
+    white-space: nowrap;
+}
+
+.btn-copy-mini:hover {
+    background: var(--accent-hover);
+}
+
+/* Ajuste Móvil */
+@media (max-width: 600px) {
+    .share-box-minimal {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .share-actions {
+        width: 100%;
+    }
+    .share-input {
+        max-width: 100%;
+    }
+}
+
+/* =========================================
+   MODO PÓSTER VERTICAL (SOLO PARA ENEBA) - FINAL
+   Reemplaza el bloque anterior en perfil.css
+   ========================================= */
+
+/* 1. Imágenes más pequeñas y compactas */
+.vertical-mode .game-thumb-profile {
+    width: 70px !important;         
+    height: 105px !important;       
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    border-radius: 6px;             
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
+    transition: transform 0.3s ease;
+    display: block; 
+    margin: 0 auto; /* Centrado dentro de su espacio */
+}
+
+.vertical-mode .game-thumb-profile:hover {
+    transform: scale(1.05);
+}
+
+/* 2. Reducir espacio en blanco en las celdas de la tabla */
+.vertical-mode td {
+    vertical-align: middle !important; 
+    padding-top: 5px !important;       
+    padding-bottom: 5px !important;
+    height: auto !important; 
+}
+
+/* 3. Ajustar la columna de la imagen (AQUÍ ESTÁ EL CAMBIO) */
+.vertical-mode th:first-child,
+.vertical-mode td:first-child {
+    width: 110px; /* Un poco más ancho para dar espacio */
+    padding-left: 25px !important; /* MÁS MARGEN A LA IZQUIERDA */
+    padding-right: 10px !important;
+}
+
+/* Opcional: Ajustar texto para que no se pegue a la foto */
+.vertical-mode td:nth-child(2) {
+     padding-left: 10px !important; 
+}
