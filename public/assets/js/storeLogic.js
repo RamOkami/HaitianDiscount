@@ -249,6 +249,27 @@ export function initStorePage(config) {
     if(form) {
         form.addEventListener('submit', async function(event) {
             event.preventDefault(); 
+            
+            // --- VALIDACIÓN LOGIN REQUERIDO (NUEVO) ---
+            const currentUser = auth.currentUser;
+            if (!currentUser) {
+                Swal.fire({
+                    title: 'Inicia Sesión',
+                    text: 'Para realizar un pedido y mantener un registro seguro, necesitas estar registrado o logueado.',
+                    icon: 'info',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ir a Iniciar Sesión',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#2563eb'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = 'pages/perfil.html';
+                    }
+                });
+                return; // Detiene la ejecución aquí si no hay usuario
+            }
+            // ------------------------------------------
+
             if (!tiendaAbierta || btnEnviar.disabled) return;
 
             if (!rutEsValido) {
@@ -262,10 +283,10 @@ export function initStorePage(config) {
             }
 
             // --- NUEVO: VERIFICACIÓN DE ESTADO DEL USUARIO ---
-            const user = auth.currentUser;
-            if (user) {
+            // Usamos currentUser que ya obtuvimos arriba
+            if (currentUser) {
                 try {
-                    const userSnapshot = await get(child(ref(db), `usuarios/${user.uid}`));
+                    const userSnapshot = await get(child(ref(db), `usuarios/${currentUser.uid}`));
                     const userData = userSnapshot.val();
                     const status = userData?.status || 'activo';
 
@@ -333,7 +354,7 @@ export function initStorePage(config) {
                             plataforma: platformName, 
                             comprobante_img: comprobanteBase64,
                             imagen_juego: coverImgSrc,
-                            uid: user ? user.uid : null 
+                            uid: currentUser ? currentUser.uid : null 
                         });
                         updateStatus('4/4 Enviando confirmación...');
                         emailjs.sendForm(SERVICE_ID, TEMPLATE_ID, form).then(() => {
