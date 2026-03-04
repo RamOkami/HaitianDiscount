@@ -260,9 +260,28 @@ export function initStorePage(config) {
                 Swal.fire('Falta el Comprobante', 'Por favor adjunta la captura de la transferencia.', 'warning');
                 return;
             }
-
-            // --- NUEVO: VERIFICACIÓN DE ESTADO DEL USUARIO ---
+            
             const user = auth.currentUser;
+
+            // --- NUEVA ALERTA: VERIFICAR SI ESTÁ LOGUEADO ---
+            if (!user) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: '¡Alto ahí!',
+                    text: 'Debes iniciar sesión para poder realizar una compra y hacerle seguimiento a tu pedido.',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ir a Iniciar Sesión',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#2563eb'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = 'pages/perfil.html';
+                    }
+                });
+                return;
+            }
+
+            // --- VERIFICACIÓN DE ESTADO DEL USUARIO (Baneado/Pausado) ---
             if (user) {
                 try {
                     const userSnapshot = await get(child(ref(db), `usuarios/${user.uid}`));
