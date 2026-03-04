@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             try {
-                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
                 const response = await fetch(proxyUrl);
                 if (!response.ok) throw new Error('No se pudo acceder a la página');
 

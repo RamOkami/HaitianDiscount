@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 const targetUrl = `https://store.steampowered.com/api/appdetails?appids=${appId}&cc=cl`;
-                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
                 
                 const response = await fetch(proxyUrl);
                 if (!response.ok) throw new Error('Error de conexión con el proxy');
