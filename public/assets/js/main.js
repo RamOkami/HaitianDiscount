@@ -25,50 +25,161 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // --- EVENTO: CLIC EN BUSCAR ---
         btnBuscarSteam.addEventListener('click', async () => {
-            console.log("Buscando juego..."); 
-            const url = inputUrlSteam.value;
-            const regex = /app\/(\d+)/;
+            console.log("Buscando juego...");
+            const url = inputUrlSteam.value.trim();
+
+            // 1. NUEVA REGEX: Acepta app, sub y bundle
+            const regex = /(app|sub|bundle)\/(\d+)/;
             const match = url.match(regex);
-            
+
             if(previewContainer) previewContainer.style.display = 'none';
 
             if (!match) {
-                window.Swal.fire('Link no válido', 'Usa un link de Steam válido (store.steampowered.com/app/...).', 'warning');
+                window.Swal.fire('Link no válido', 'Usa un link de Steam válido (store.steampowered.com/app/..., /sub/... o /bundle/...).', 'warning');
                 return;
             }
 
-            const appId = match[1];
+            const tipoItem = match[1]; // 'app', 'sub', o 'bundle'
+            const itemId = match[2];
+
             window.Swal.fire({ title: 'Buscando en Steam...', didOpen: () => window.Swal.showLoading() });
 
             try {
-                const targetUrl = `https://store.steampowered.com/api/appdetails?appids=${appId}&cc=cl`;
-                const proxyUrl = `https://haitiandiscount-proxy.haitiandiscount.workers.dev/?url=${encodeURIComponent(targetUrl)}`;
-                
-                const response = await fetch(proxyUrl);
-                if (!response.ok) throw new Error('Error de conexión con el proxy');
-                
-                const steamData = await response.json();
+                if (tipoItem === 'app' || tipoItem === 'sub') {
+                    // --- LÓGICA PARA APPS Y SUBS (API OFICIAL) ---
+                    const endpoint = tipoItem === 'app' ? 'appdetails?appids=' : 'packagedetails?packageids=';
+                    const targetUrl = `https://store.steampowered.com/api/${endpoint}${itemId}&cc=cl`;
+                    const proxyUrl = `https://haitiandiscount-proxy.haitiandiscount.workers.dev/?url=${encodeURIComponent(targetUrl)}`;
 
-                if (steamData[appId] && steamData[appId].success) {
-                    const gameInfo = steamData[appId].data;
+                    const response = await fetch(proxyUrl);
+                    if (!response.ok) throw new Error('Error de conexión con el proxy');
+                    const steamData = await response.json();
+
+                    // Nota: 'packagedetails' no usa 'success' en la raíz, maneja la estructura dinámicamente
+                    const itemData = steamData[itemId];
+                    if (itemData && (itemData.success !== false)) { 
+                        const gameInfo = itemData.data || itemData; // app usa data, sub viene directo a veces
+                        
+                        currentGameData = {
+                            id: itemId,
+                            name: gameInfo.name,
+                            image: gameInfo.header_image || 'assets/img/logo.png',
+                            url: url 
+                        };
+
+                        const inputJuego = document.getElementById('juego');
+                        if(inputJuego) inputJuego.value = gameInfo.name;
+
+                        if (gameInfo.header_image && previewContainer && gameCoverImg) {
+                            gameCoverImg.src = gameInfo.header_image;
+                            const bgDiv = document.getElementById('gamePreviewBg');
+                            if(bgDiv) {
+                                bgDiv.style.backgroundImage = `url('${gameInfo.header_image}')`;
+                                bgDiv.style.opacity = '1';
+                            }
+
+                            let wishBtn = document.getElementById('btnWishlistToggle');
+                            if (!wishBtn) {
+                                wishBtn = document.createElement('button');
+                                wishBtn.id = 'btnWishlistToggle';
+                                wishBtn.className = 'wishlist-btn';
+                                wishBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>';
+                                previewContainer.appendChild(wishBtn);
+                                wishBtn.addEventListener('click', toggleWishlist);
+                            }
+
+                            checkWishlistStatus(itemId);
+                            previewContainer.style.display = 'block';
+                        }
+
+                        const inputPrecio = document.getElementById('precioSteam');
+                        window.Swal.close();
+                        const Toast = window.Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+
+                        // Manejo de precio para app y sub
+                        if (gameInfo.is_free) {
+                            inputPrecio.value = 0;
+                            Toast.fire({ icon: 'info', title: 'Juego Gratis' });
+                        } else if (gameInfo.price_overview || gameInfo.price) {
+                            let precioObj = gameInfo.price_overview || gameInfo.price;
+                            let precio = (precioObj.final || precioObj.initial) / 100;
+                            inputPrecio.value = precio;
+                            inputPrecio.dispatchEvent(new Event('input'));
+
+                            setTimeout(() => {
+                                const btnCalc = document.getElementById('btnCalcular');
+                                if(btnCalc) btnCalc.click();
+                            }, 300);
+
+                            if(precioObj.discount_percent > 0) {
+                                Toast.fire({ icon: 'success', title: `¡Oferta detectada! -${precioObj.discount_percent}%` });
+                            } else {
+                                Toast.fire({ icon: 'success', title: 'Datos cargados' });
+                            }
+                        } else {
+                            Toast.fire({ icon: 'warning', title: 'Sin precio disponible' });
+                        }
+                    } else {
+                        throw new Error('Juego o Pack no encontrado en la API');
+                    }
+
+                } else if (tipoItem === 'bundle') {
+                    // --- LÓGICA PARA BUNDLES (SCRAPING HTML VÍA PROXY) ---
                     
+                    // 1. Forzamos la moneda a pesos chilenos añadiendo ?cc=cl al link
+                    const bundleUrlObj = new URL(url);
+                    bundleUrlObj.searchParams.set('cc', 'cl');
+                    const targetBundleUrl = bundleUrlObj.toString();
+
+                    const proxyUrl = `https://haitiandiscount-proxy.haitiandiscount.workers.dev/?url=${encodeURIComponent(targetBundleUrl)}`;
+                    const response = await fetch(proxyUrl);
+                    if (!response.ok) throw new Error('No se pudo acceder a la página del bundle');
+
+                    const htmlText = await response.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(htmlText, 'text/html');
+
+                    // 2. Extraer Título
+                    const titleEl = doc.querySelector('.pageheader');
+                    let title = titleEl ? titleEl.innerText.trim() : '';
+                    if (!title) {
+                        const metaTitle = doc.querySelector('meta[property="og:title"]');
+                        title = metaTitle ? metaTitle.content : 'Pack de Steam';
+                    }
+
+                    // 3. Extraer Imagen
+                    const imgEl = doc.querySelector('.package_header');
+                    let imgUrl = imgEl ? imgEl.src : '';
+                    if (!imgUrl) {
+                        const metaImg = doc.querySelector('meta[property="og:image"]');
+                        imgUrl = metaImg ? metaImg.content : '';
+                    }
+
+                    // 4. Extraer Precio Final (Mejorado para packs)
+                    // Buscamos clases específicas de bundles, o tomamos el ÚLTIMO precio de descuento en la página (el total)
+                    let priceEl = doc.querySelector('.bundle_final_price_with_discount') || 
+                                  doc.querySelector('.bundle_final_package_price') || 
+                                  Array.from(doc.querySelectorAll('.discount_final_price')).pop();
+                                  
+                    let priceText = priceEl ? priceEl.innerText.replace(/[^0-9]/g, '') : '0';
+                    let precioCalculado = parseInt(priceText, 10);
+
                     currentGameData = {
-                        id: appId,
-                        name: gameInfo.name,
-                        image: gameInfo.header_image,
-                        url: `https://store.steampowered.com/app/${appId}/`
+                        id: `bundle_${itemId}`,
+                        name: title,
+                        image: imgUrl,
+                        url: url
                     };
 
                     const inputJuego = document.getElementById('juego');
-                    if(inputJuego) inputJuego.value = gameInfo.name;
+                    if(inputJuego) inputJuego.value = title;
 
-                    if (gameInfo.header_image && previewContainer && gameCoverImg) {
-                        gameCoverImg.src = gameInfo.header_image;
-                        
+                    if (imgUrl && previewContainer && gameCoverImg) {
+                        gameCoverImg.src = imgUrl;
                         const bgDiv = document.getElementById('gamePreviewBg');
                         if(bgDiv) {
-                            bgDiv.style.backgroundImage = `url('${gameInfo.header_image}')`;
-                            bgDiv.style.opacity = '1'; 
+                            bgDiv.style.backgroundImage = `url('${imgUrl}')`;
+                            bgDiv.style.opacity = '1';
                         }
 
                         let wishBtn = document.getElementById('btnWishlistToggle');
@@ -81,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             wishBtn.addEventListener('click', toggleWishlist);
                         }
 
-                        checkWishlistStatus(appId);
+                        checkWishlistStatus(currentGameData.id);
                         previewContainer.style.display = 'block';
                     }
 
@@ -89,31 +200,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     window.Swal.close();
                     const Toast = window.Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
 
-                    if (gameInfo.is_free) {
-                        inputPrecio.value = 0;
-                        Toast.fire({ icon: 'info', title: 'Juego Gratis' });
-                    } else if (gameInfo.price_overview) {
-                        let precio = gameInfo.price_overview.final / 100;
-                        inputPrecio.value = precio;
-                        inputPrecio.dispatchEvent(new Event('input')); 
+                    // Si logramos extraer el precio, lo seteamos y autocalculamos
+                    if (precioCalculado > 0) {
+                        inputPrecio.value = precioCalculado;
+                        inputPrecio.dispatchEvent(new Event('input'));
 
-                        // --- NUEVO: AUTO-CALCULAR PRECIO FINAL ---
                         setTimeout(() => {
                             const btnCalc = document.getElementById('btnCalcular');
                             if(btnCalc) btnCalc.click();
-                        }, 300); 
+                        }, 300);
 
-                        if(gameInfo.price_overview.discount_percent > 0) {
-                            Toast.fire({ icon: 'success', title: `¡Oferta detectada! -${gameInfo.price_overview.discount_percent}%` });
-                        } else {
-                            Toast.fire({ icon: 'success', title: 'Datos cargados' });
-                        }
+                        Toast.fire({ icon: 'success', title: '¡Pack cargado con éxito!' });
                     } else {
-                        Toast.fire({ icon: 'warning', title: 'Sin precio disponible' });
+                        Toast.fire({ icon: 'warning', title: 'Pack cargado. Por favor ingresa el precio manualmente.' });
                     }
-                } else {
-                    throw new Error('Juego no encontrado o ID inválido');
                 }
+
             } catch (error) {
                 console.error("Error en búsqueda:", error);
                 window.Swal.fire('Error', 'No pudimos cargar los datos. Intenta ingresarlos manualmente.', 'error');
