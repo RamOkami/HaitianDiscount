@@ -224,7 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const targetUrl = `https://store.steampowered.com/api/appdetails?appids=${appId}&cc=cl`;
-            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+            const proxyUrl = `https://haitiandiscount-proxy.haitiandiscount.workers.dev/?url=${encodeURIComponent(targetUrl)}`;
             
             const response = await fetch(proxyUrl);
             const steamData = await response.json();
