@@ -1021,6 +1021,68 @@ body.dark-mode .feedback-card {
     margin: 20px 0;
 }
 
+/* =========================================
+   ESTILOS PARA BUSCADOR POR NOMBRE (MODAL)
+   ========================================= */
+.steam-search-results {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 350px;
+    overflow-y: auto;
+    padding-right: 8px;
+    margin-top: 15px;
+}
+
+/* Estilizar la barra de scroll */
+.steam-search-results::-webkit-scrollbar {
+    width: 6px;
+}
+.steam-search-results::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
+}
+
+.search-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px;
+    background: var(--bg-body);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+}
+
+.search-item:hover {
+    border-color: var(--accent);
+    background: rgba(37, 99, 235, 0.05);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.search-item img {
+    width: 90px;
+    height: auto;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.search-item-info {
+    flex: 1;
+    color: var(--text-main);
+    font-size: 0.95rem;
+    line-height: 1.3;
+}
+
+/* Ajustes adicionales para Modo Oscuro en la lista */
+body.dark-mode .search-item:hover {
+    background: rgba(59, 130, 246, 0.1);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
 @media (max-width: 768px) {
     .feedback-grid {
         gap: 20px;

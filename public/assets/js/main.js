@@ -34,9 +34,63 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if(previewContainer) previewContainer.style.display = 'none';
 
+            // --- NUEVO: SI NO ES UN LINK, BUSCAMOS POR NOMBRE ---
             if (!match) {
-                window.Swal.fire('Link no válido', 'Usa un link de Steam válido (store.steampowered.com/app/..., /sub/... o /bundle/...).', 'warning');
-                return;
+                if (url.length < 3) {
+                    window.Swal.fire('Búsqueda inválida', 'Ingresa un link válido de Steam o al menos 3 letras para buscar por nombre.', 'warning');
+                    return;
+                }
+                
+                window.Swal.fire({ title: 'Buscando en Steam...', didOpen: () => window.Swal.showLoading() });
+                
+                try {
+                    // API de búsqueda de Steam
+                    const searchUrl = `https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(url)}&l=spanish&cc=cl`;
+                    const proxyUrl = `https://haitiandiscount-proxy.haitiandiscount.workers.dev/?url=${encodeURIComponent(searchUrl)}`;
+                    
+                    const response = await fetch(proxyUrl);
+                    const data = await response.json();
+                    
+                    if (data.total > 0 && data.items && data.items.length > 0) {
+                        let htmlStr = '<div class="steam-search-results">';
+                        data.items.forEach(item => {
+                            const imgUrl = item.tiny_image || `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${item.id}/capsule_sm_120.jpg`;
+                            htmlStr += `
+                                <div class="search-item" onclick="seleccionarJuegoBuscado('${item.id}')">
+                                    <img src="${imgUrl}" alt="${item.name}">
+                                    <div class="search-item-info">
+                                        <strong>${item.name}</strong>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        htmlStr += '</div>';
+                        
+                        window.Swal.fire({
+                            title: 'Resultados de búsqueda',
+                            html: htmlStr,
+                            showConfirmButton: false,
+                            showCloseButton: true,
+                            width: '500px'
+                        });
+                        
+                        if(!window.seleccionarJuegoBuscado) {
+                            window.seleccionarJuegoBuscado = (appId) => {
+                                window.Swal.close();
+                                inputUrlSteam.value = `https://store.steampowered.com/app/${appId}/`;
+                                btnBuscarSteam.click(); 
+                            };
+                        }
+                        return;
+                    } else {
+                        window.Swal.fire('Sin resultados', 'No encontramos ningún juego con ese nombre en Steam.', 'info');
+                        return;
+                    }
+                } catch (error) {
+                    console.error("Error buscando por nombre:", error);
+                    window.Swal.fire('Error', 'Hubo un problema con la búsqueda. Intenta con el link directo.', 'error');
+                    return;
+                }
             }
 
             const tipoItem = match[1]; // 'app', 'sub', o 'bundle'
