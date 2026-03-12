@@ -967,6 +967,60 @@ body.dark-mode .feedback-card {
     color: var(--text-light);
 }
 
+/* =========================================
+   BOTÓN DE REQUISITOS Y MODAL STEAM
+   ========================================= */
+.req-btn {
+    position: absolute;
+    top: 70px;
+    right: 15px;
+    background: rgba(0, 0, 0, 0.6);
+    border: none;
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.3s ease;
+    color: white; 
+}
+
+.req-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.req-btn svg {
+    width: 22px;
+    height: 22px;
+    fill: currentColor; 
+}
+
+/* Limpiar el HTML sucio que envía Steam */
+.steam-req-content {
+    text-align: left;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--text-main);
+}
+.steam-req-content strong {
+    color: var(--primary);
+    font-weight: 700;
+}
+.steam-req-content ul {
+    padding-left: 20px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+}
+.steam-req-content hr {
+    border: 0;
+    border-top: 1px dashed var(--border);
+    margin: 20px 0;
+}
+
 @media (max-width: 768px) {
     .feedback-grid {
         gap: 20px;

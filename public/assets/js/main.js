@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Nota: 'packagedetails' no usa 'success' en la raíz, maneja la estructura dinámicamente
                     const itemData = steamData[itemId];
                     if (itemData && (itemData.success !== false)) { 
-                        const gameInfo = itemData.data || itemData; // app usa data, sub viene directo a veces
+                        const gameInfo = itemData.data || itemData; 
                         
                         currentGameData = {
                             id: itemId,
@@ -78,6 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 bgDiv.style.opacity = '1';
                             }
 
+                            // --- BOTÓN WISHLIST (CORAZÓN - DERECHA) ---
                             let wishBtn = document.getElementById('btnWishlistToggle');
                             if (!wishBtn) {
                                 wishBtn = document.createElement('button');
@@ -88,11 +89,46 @@ document.addEventListener('DOMContentLoaded', () => {
                                 wishBtn.addEventListener('click', toggleWishlist);
                             }
 
+                            // --- NUEVO: BOTÓN REQUISITOS (PC - IZQUIERDA) ---
+                            let reqBtn = document.getElementById('btnReqToggle');
+                            if (!reqBtn) {
+                                reqBtn = document.createElement('button');
+                                reqBtn.id = 'btnReqToggle';
+                                reqBtn.className = 'req-btn';
+                                reqBtn.title = 'Ver Requisitos del Sistema';
+                                reqBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 2H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h7l-2 3v1h8v-1l-2-3h7c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H3V4h18v12z"/></svg>';
+                                previewContainer.appendChild(reqBtn);
+                            }
+
+                            // Verificar si Steam nos mandó los requisitos (no todos los juegos los traen)
+                            if (tipoItem === 'app' && gameInfo.pc_requirements && (gameInfo.pc_requirements.minimum || gameInfo.pc_requirements.recommended)) {
+                                reqBtn.style.display = 'flex'; // Mostrar botón
+                                
+                                let reqHtml = '<div class="steam-req-content">';
+                                if (gameInfo.pc_requirements.minimum) reqHtml += gameInfo.pc_requirements.minimum;
+                                if (gameInfo.pc_requirements.recommended) reqHtml += '<hr>' + gameInfo.pc_requirements.recommended;
+                                reqHtml += '</div>';
+
+                                reqBtn.onclick = (e) => {
+                                    e.preventDefault();
+                                    window.Swal.fire({
+                                        title: 'Requisitos del Sistema',
+                                        html: reqHtml,
+                                        width: '600px',
+                                        confirmButtonText: 'Cerrar',
+                                        confirmButtonColor: 'var(--accent)'
+                                    });
+                                };
+                            } else {
+                                reqBtn.style.display = 'none'; // Ocultar si es un juego viejo sin info
+                            }
+
                             checkWishlistStatus(itemId);
                             previewContainer.style.display = 'block';
                         }
 
                         const inputPrecio = document.getElementById('precioSteam');
+                        
                         window.Swal.close();
                         const Toast = window.Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
 
@@ -191,6 +227,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             previewContainer.appendChild(wishBtn);
                             wishBtn.addEventListener('click', toggleWishlist);
                         }
+
+                        // --- OCULTAR REQUISITOS EN BUNDLES ---
+                        let reqBtn = document.getElementById('btnReqToggle');
+                        if (reqBtn) reqBtn.style.display = 'none';
 
                         checkWishlistStatus(currentGameData.id);
                         previewContainer.style.display = 'block';
