@@ -27,11 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const url = inputUrl.value.trim();
 
             // --- PASO 1: LIMPIEZA TOTAL INMEDIATA ---
-            // Ocultamos el contenedor anterior para evitar confusiones visuales
             if(previewContainer) previewContainer.style.display = 'none';
-            // Reseteamos la variable de datos
             currentEnebaData = null;
-            // Reseteamos visualmente el botón si existe
             const existingBtn = document.getElementById('btnWishlistToggle');
             if (existingBtn) existingBtn.classList.remove('active');
             // ----------------------------------------
@@ -43,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             Swal.fire({
                 title: 'Analizando Eneba...',
-                text: 'Obteniendo imagen y título exacto',
+                text: 'Obteniendo datos y requisitos...',
                 didOpen: () => Swal.showLoading()
             });
 
@@ -76,16 +73,56 @@ document.addEventListener('DOMContentLoaded', () => {
                     .replace(/\s+-\s+Eneba.*/i, '')
                     .trim();
 
+                    
+                // --- NUEVO: EXTRAER REQUISITOS (SCRAPING EN ENEBA MEJORADO Y LIMPIO) ---
+                let reqHtml = '';
+                
+                // 1. Buscamos SOLO etiquetas de título principales (h2 o h3)
+                const headings = Array.from(doc.querySelectorAll('h2, h3'));
+                const targetHeading = headings.find(el => {
+                    const text = el.textContent.toLowerCase().trim();
+                    return text === 'requisitos del sistema' || text === 'system requirements';
+                });
+
+                if (targetHeading) {
+                    let reqContainer = targetHeading.parentElement;
+
+                    if (reqContainer && reqContainer.innerText.length > 2000) {
+                        if (targetHeading.nextElementSibling) {
+                            reqContainer = targetHeading.nextElementSibling;
+                        }
+                    }
+
+                    if (reqContainer) {
+                        // --- MAGIA DE LIMPIEZA ---
+                        const clone = reqContainer.cloneNode(true);
+                        
+                        // A) Eliminamos los títulos grandes y botones (Ej: Pestaña "WINDOWS")
+                        clone.querySelectorAll('h2, h3, h4, button, ul[role="tablist"]').forEach(el => el.remove());
+                        
+                        // B) Eliminamos textos sueltos molestos (por si Eneba los pone en spans o divs)
+                        clone.querySelectorAll('span, p, div').forEach(el => {
+                            if (el.children.length === 0) { // Solo tocamos elementos que sean texto final
+                                const t = el.textContent.trim().toLowerCase();
+                                if (t === 'windows' || t === 'requisitos mínimos del sistema' || t === 'minimum system requirements') {
+                                    el.remove();
+                                }
+                            }
+                        });
+
+                        reqHtml = `<div class="steam-req-content">${clone.innerHTML}</div>`;
+                    }
+                }
+                // ----------------------------------------------------
+
                 Swal.close();
 
                 if (title && inputNombre) {
                     inputNombre.value = title;
                     
-                    // Generamos ID único para el NUEVO juego
-                    const cleanUrl = url.split('?')[0]; // Quitamos los parámetros extra
+                    const cleanUrl = url.split('?')[0]; 
                     const gameId = btoa(cleanUrl).replace(/[^a-zA-Z0-9]/g, '').slice(-50);
 
-                    // Actualizamos datos globales
                     currentEnebaData = {
                         id: gameId, 
                         name: title,
@@ -100,10 +137,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             bgDiv.style.opacity = '1';
                         }
 
-                        // --- GESTIÓN ROBUSTA DEL BOTÓN ---
+                        // --- GESTIÓN DEL BOTÓN FAVORITOS (CORAZÓN) ---
                         let wishBtn = document.getElementById('btnWishlistToggle');
-                        
-                        // Si no existe, lo creamos
                         if (!wishBtn) {
                             wishBtn = document.createElement('button');
                             wishBtn.id = 'btnWishlistToggle';
@@ -112,17 +147,45 @@ document.addEventListener('DOMContentLoaded', () => {
                             previewContainer.appendChild(wishBtn);
                         }
 
-                        // TRUCO PRO: Clonamos el botón para eliminar TODOS los listeners anteriores
-                        // Esto evita que al hacer clic se ejecute la lógica del juego viejo
                         const newBtn = wishBtn.cloneNode(true);
                         wishBtn.parentNode.replaceChild(newBtn, wishBtn);
                         
-                        // Ahora 'newBtn' es un elemento limpio. Le agregamos el listener nuevo.
-                        newBtn.classList.remove('active'); // Aseguramos que empiece vacío
+                        newBtn.classList.remove('active'); 
                         newBtn.addEventListener('click', toggleWishlist);
-                        
-                        // Verificamos en DB si ESTE juego específico ya está guardado
                         checkWishlistStatus(currentEnebaData.id, newBtn);
+
+                        // --- NUEVO: GESTIÓN DEL BOTÓN REQUISITOS (PC) ---
+                        let reqBtn = document.getElementById('btnReqToggle');
+                        if (!reqBtn) {
+                            reqBtn = document.createElement('button');
+                            reqBtn.id = 'btnReqToggle';
+                            reqBtn.className = 'req-btn'; 
+                            reqBtn.title = 'Ver Requisitos del Sistema';
+                            reqBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 2H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h7l-2 3v1h8v-1l-2-3h7c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H3V4h18v12z"/></svg>';
+                            previewContainer.appendChild(reqBtn);
+                        }
+
+                        // Si logramos extraer los requisitos de la página, mostramos el botón
+                        if (reqHtml && reqHtml.length > 50) {
+                            reqBtn.style.display = 'flex';
+                            
+                            const newReqBtn = reqBtn.cloneNode(true);
+                            reqBtn.parentNode.replaceChild(newReqBtn, reqBtn);
+
+                            newReqBtn.onclick = (e) => {
+                                e.preventDefault();
+                                window.Swal.fire({
+                                    title: 'Requisitos del Sistema',
+                                    html: reqHtml,
+                                    width: '600px',
+                                    confirmButtonText: 'Cerrar',
+                                    confirmButtonColor: '#a855f7' // Morado estilo Eneba
+                                });
+                            };
+                        } else {
+                            // Si el juego en Eneba no tiene listados los requisitos, ocultamos el botón
+                            reqBtn.style.display = 'none'; 
+                        }
 
                         previewContainer.style.display = 'block';
                         gameCoverImg.style.opacity = 0;
@@ -152,32 +215,27 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const user = auth.currentUser;
         
-        // Validación 1: Usuario Logueado
         if (!user) {
             Swal.fire('Inicia Sesión', 'Debes iniciar sesión para guardar en favoritos.', 'info');
             return;
         }
         
-        // Validación 2: Datos cargados correctamente
         if (!currentEnebaData || !currentEnebaData.id) {
             console.warn("No hay datos de juego cargados");
             return;
         }
 
-        const btn = e.currentTarget; // Usamos el botón que disparó el evento
+        const btn = e.currentTarget; 
         const gameRef = child(ref(db), `usuarios/${user.uid}/wishlist/${currentEnebaData.id}`);
 
-        // Deshabilitar botón momentáneamente para evitar doble clic
         btn.style.pointerEvents = 'none';
 
         try {
             if (btn.classList.contains('active')) {
-                // ELIMINAR
                 await remove(gameRef);
                 btn.classList.remove('active');
                 Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Eliminado de Deseados', showConfirmButton: false, timer: 1500 });
             } else {
-                // AGREGAR
                 await set(gameRef, {
                     nombre: currentEnebaData.name,
                     imagen: currentEnebaData.image,
@@ -192,7 +250,6 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error(err);
             Swal.fire('Error', 'No se pudo actualizar la lista.', 'error');
         } finally {
-            // Rehabilitar botón
             btn.style.pointerEvents = 'auto';
         }
     }
@@ -281,7 +338,6 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadFeedback() {
     const feedbackContainer = document.getElementById('feedback-container');
     
-    // NUEVO: Consultamos el nodo público
     const feedbackQuery = query(
         ref(db, 'feedbacks_publicos'),
         orderByChild('fecha'),
@@ -298,7 +354,6 @@ async function loadFeedback() {
                 feedbacks.push(childSnapshot.val());
             });
 
-            // Revertimos para que el más nuevo salga primero
             feedbacks.reverse();
 
             feedbacks.forEach((feedback) => {
