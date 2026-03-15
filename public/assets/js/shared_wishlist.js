@@ -1,30 +1,14 @@
 /* ARCHIVO: public/assets/js/shared_wishlist.js */
 import { ref, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-import { db, initTheme } from './config.js'; 
+import { db, initTheme } from './config.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     
-    // 1. LÓGICA DE MODO OSCURO (Manual + Importada)
+    // 1. LÓGICA DE MODO OSCURO (Importada)
     try {
         initTheme();
     } catch (e) {
-        console.log("Aplicando tema manualmente...");
-    }
-    
-    const themeBtn = document.getElementById('theme-toggle');
-    const body = document.body;
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') body.classList.add('dark-mode');
-    
-    if(themeBtn) {
-        const newBtn = themeBtn.cloneNode(true);
-        themeBtn.parentNode.replaceChild(newBtn, themeBtn);
-        
-        newBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            body.classList.toggle('dark-mode');
-            localStorage.setItem('theme', body.classList.contains('dark-mode') ? 'dark' : 'light');
-        });
+        console.log("Error al aplicar tema:", e);
     }
 
     // 2. OBTENER UID DE LA URL

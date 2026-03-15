@@ -1,7 +1,8 @@
 /* ARCHIVO: public/assets/js/eneba.js */
 import { initStorePage } from './storeLogic.js';
-import { db, auth } from './config.js';
+import { db, auth, fetchViaProxy } from './config.js';
 import { ref, set, get, remove, child, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
 
 // 1. Inicializamos la lógica base
 initStorePage({
@@ -45,8 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             try {
-                const proxyUrl = `https://haitiandiscount-proxy.haitiandiscount.workers.dev/?url=${encodeURIComponent(url)}`;
-                const response = await fetch(proxyUrl);
+                const response = await fetchViaProxy(url);
                 if (!response.ok) throw new Error('No se pudo acceder a la página');
 
                 const htmlText = await response.text();

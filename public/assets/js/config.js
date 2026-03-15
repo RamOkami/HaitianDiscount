@@ -206,3 +206,17 @@ export function comprimirImagen(file) {
         reader.onerror = (err) => reject(err);
     });
 }
+
+// --- 6. PETICIONES EXTERNAS (PROXY) ---
+export const PROXY_BASE_URL = "https://haitiandiscount-proxy.haitiandiscount.workers.dev/?url=";
+
+export async function fetchViaProxy(targetUrl) {
+    const finalUrl = `${PROXY_BASE_URL}${encodeURIComponent(targetUrl)}`;
+    const response = await fetch(finalUrl);
+    
+    if (!response.ok) {
+        throw new Error(`Error de conexión con el proxy (Status: ${response.status})`);
+    }
+    
+    return response;
+}

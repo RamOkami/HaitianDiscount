@@ -1,6 +1,6 @@
 /* ARCHIVO: assets/js/main.js */
 import { initStorePage } from './storeLogic.js';
-import { db, auth } from './config.js';
+import { db, auth, fetchViaProxy } from './config.js';
 import { ref, set, get, remove, child, onValue, query, orderByChild, equalTo, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 // 1. INICIALIZAMOS LA LÓGICA COMPARTIDA
@@ -46,9 +46,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 try {
                     // API de búsqueda de Steam
                     const searchUrl = `https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(url)}&l=spanish&cc=cl`;
-                    const proxyUrl = `https://haitiandiscount-proxy.haitiandiscount.workers.dev/?url=${encodeURIComponent(searchUrl)}`;
                     
-                    const response = await fetch(proxyUrl);
+                    const response = await fetchViaProxy(searchUrl);
                     const data = await response.json();
                     
                     if (data.total > 0 && data.items && data.items.length > 0) {
@@ -103,9 +102,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     // --- LÓGICA PARA APPS Y SUBS (API OFICIAL) ---
                     const endpoint = tipoItem === 'app' ? 'appdetails?appids=' : 'packagedetails?packageids=';
                     const targetUrl = `https://store.steampowered.com/api/${endpoint}${itemId}&cc=cl`;
-                    const proxyUrl = `https://haitiandiscount-proxy.haitiandiscount.workers.dev/?url=${encodeURIComponent(targetUrl)}`;
 
-                    const response = await fetch(proxyUrl);
+                    const response = await fetchViaProxy(targetUrl);
                     if (!response.ok) throw new Error('Error de conexión con el proxy');
                     const steamData = await response.json();
 
@@ -221,9 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     bundleUrlObj.searchParams.set('cc', 'cl');
                     const targetBundleUrl = bundleUrlObj.toString();
 
-                    const proxyUrl = `https://haitiandiscount-proxy.haitiandiscount.workers.dev/?url=${encodeURIComponent(targetBundleUrl)}`;
-                    const response = await fetch(proxyUrl);
-                    if (!response.ok) throw new Error('No se pudo acceder a la página del bundle');
+                    const response = await fetchViaProxy(targetBundleUrl);
 
                     const htmlText = await response.text();
                     const parser = new DOMParser();
@@ -420,9 +416,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const targetUrl = `https://store.steampowered.com/api/appdetails?appids=${appId}&cc=cl`;
-            const proxyUrl = `https://haitiandiscount-proxy.haitiandiscount.workers.dev/?url=${encodeURIComponent(targetUrl)}`;
             
-            const response = await fetch(proxyUrl);
+            const response = await fetchViaProxy(targetUrl);
             const steamData = await response.json();
 
             if (steamData[appId] && steamData[appId].success) {
