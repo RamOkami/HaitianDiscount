@@ -173,43 +173,35 @@ function cargarHistorial(uid) {
             
             let imgHtml = '<span style="font-size:0.8rem; color:#ccc;">Sin Img</span>';
             if(orden.imagen_juego) {
-                imgHtml = `<img src="${orden.imagen_juego}" class="game-thumb-profile" alt="Juego">`;
+                imgHtml = `<img src="${orden.imagen_juego}" alt="Juego">`;
             }
 
             const showKey = (plat === 'Eneba' && estado === 'completado' && orden.game_key);
-            const rowClass = showKey ? 'has-key-below' : '';
 
-            // Fila Principal
+            // Estructura de Tarjeta Moderna (Card)
             const row = `
-                <tr class="${rowClass}">
-                    <td>${fecha}</td>
-                    <td style="padding: 5px; text-align: center;">${imgHtml}</td> 
-                    <td style="font-weight:600;">${orden.juego}</td>
-                    <td class="${platClass}">${plat.toUpperCase()}</td>
-                    <td>${monto}</td>
-                    <td><span class="status-badge st-${estado}">${estado.toUpperCase()}</span></td>
-                </tr>
+                <div class="order-card">
+                    <div class="order-main">
+                        <div class="order-date">${fecha}</div>
+                        <div class="order-img">${imgHtml}</div>
+                        <div class="order-game-title" title="${orden.juego}">${orden.juego}</div>
+                        <div class="order-platform ${platClass}">${plat.toUpperCase()}</div>
+                        <div class="order-price">${monto}</div>
+                        <div class="order-status"><span class="status-badge st-${estado}">${estado.toUpperCase()}</span></div>
+                    </div>
+                    ${showKey ? `
+                    <div class="order-key-section">
+                        <span class="key-label">Licencia:</span>
+                        <div class="key-code" id="key-${orden.id}">${orden.game_key}</div>
+                        <button class="btn-copy" onclick="copiarKey('${orden.game_key}')">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            Copiar
+                        </button>
+                    </div>
+                    ` : ''}
+                </div>
             `;
             historyBody.innerHTML += row;
-
-            // --- SECCIÓN KEY ENEBA ---
-            if (showKey) {
-                const keyRow = `
-                    <tr class="key-row-container">
-                        <td colspan="6">
-                            <div class="key-box">
-                                <span class="key-label">Licencia:</span>
-                                <div class="key-code" id="key-${orden.id}">${orden.game_key}</div>
-                                <button class="btn-copy" onclick="copiarKey('${orden.game_key}')">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                                    Copiar
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-                historyBody.innerHTML += keyRow;
-            }
 
             if (estado === 'completado') {
                 totalJuegos++;

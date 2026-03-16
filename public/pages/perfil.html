@@ -132,22 +132,19 @@
             </div>
 
             <div id="tab-pedidos" class="tab-content active">
-                <div class="table-responsive">
-                    <table id="historyTable">
-                        <thead>
-                            <tr>
-                                <th>Fecha</th>
-                                <th>Imagen</th> <th>Juego</th>
-                                <th>Plataforma</th>
-                                <th>Precio</th>
-                                <th>Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody id="historyBody"></tbody>
-                    </table>
-                    <div id="noDataMsg" style="text-align:center; padding: 40px; display:none; color: var(--text-light);">
-                        No tienes pedidos registrados con esta cuenta.
-                    </div>
+                <div class="order-list-header">
+                    <div>Fecha</div>
+                    <div>Imagen</div>
+                    <div>Juego</div>
+                    <div>Plataforma</div>
+                    <div>Precio</div>
+                    <div style="text-align: right;">Estado</div>
+                </div>
+                
+                <div id="historyBody" class="orders-container"></div>
+                
+                <div id="noDataMsg" style="text-align:center; padding: 40px; display:none; color: var(--text-light);">
+                    No tienes pedidos registrados con esta cuenta.
                 </div>
             </div>
 

@@ -138,14 +138,13 @@
 .tab-content.active { display: block; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-/* TABLAS */
+/* TABLAS (Aún se usan para Wishlist) */
 .table-responsive { overflow-x: auto; background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border); }
 table { width: 100%; border-collapse: collapse; min-width: 600px; }
 th { text-align: left; padding: 15px; background: rgba(0,0,0,0.02); color: var(--primary); font-size: 0.85rem; border-bottom: 2px solid var(--border); }
 td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 0.9rem; color: var(--text-main); vertical-align: middle; }
 
-/* Centrado de Imagen en Tablas */
-#historyTable th:nth-child(2), #historyTable td:nth-child(2),
+/* Centrado de Imagen solo en Tabla Wishlist */
 #wishlistTable th:nth-child(1), #wishlistTable td:nth-child(1) { text-align: center; }
 
 .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
@@ -186,7 +185,7 @@ td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 0.9rem; c
 }
 body.dark-mode .rank-progress-bg { background-color: rgba(255, 255, 255, 0.1); }
 
-/* Ajuste Responsive */
+/* Ajuste Responsive Header */
 @media (max-width: 600px) {
     .user-header { flex-direction: column; text-align: center; }
     .user-profile-group { flex-direction: column; width: 100%; }
@@ -194,262 +193,153 @@ body.dark-mode .rank-progress-bg { background-color: rgba(255, 255, 255, 0.1); }
     .game-thumb-profile { width: 90px; height: 42px; }
 }
 
-/* =========================================
-   ESTILOS DE LA KEY (DISEÑO TARJETA FLOTANTE)
-   ========================================= */
-
-/* 1. Ajuste de la fila superior (el juego) */
-tr.has-key-below td {
-    border-bottom: none !important; /* Sin borde para que no corte visualmente */
-    padding-bottom: 0 !important; /* Quitamos padding para que la caja controle el margen */
-}
-
-/* 2. Contenedor de la celda de la key */
-.key-row-container td {
-    padding: 0 15px 25px 15px !important; /* Padding lateral y espacio abajo */
-    border-bottom: 2px solid var(--border) !important; /* Línea divisoria clara */
-    background-color: transparent !important;
-}
-
-/* 3. La Caja de la Key (Tarjeta Flotante) */
-.key-box {
-    /* Fondo Morado Suave */
-    background: linear-gradient(90deg, rgba(168, 85, 247, 0.15) 0%, rgba(168, 85, 247, 0.05) 100%);
-    
-    /* Borde completo sutil (Reemplaza la barra izquierda) */
-    border: 1px solid rgba(168, 85, 247, 0.3);
-    
-    /* Forma Redondeada */
-    border-radius: 12px;
-    
-    /* Margen superior para separarse del juego (PIXELES EXTRA) */
-    margin-top: 10px;
-    
-    /* Dimensiones y Layout */
-    width: 100%;
-    padding: 10px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 15px;
-    
-    animation: slideIn 0.3s ease-out;
-}
-
-@keyframes slideIn {
-    from { opacity: 0; transform: translateY(-5px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Label "LICENCIA:" */
-.key-label {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #a855f7;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-/* El Código */
-.key-code {
-    font-family: 'Consolas', 'Monaco', monospace;
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: var(--text-main);
-    letter-spacing: 1px;
-    background: rgba(255, 255, 255, 0.5); /* Fondo blanco semitransparente */
-    padding: 5px 12px;
-    border-radius: 6px;
-    border: 1px dashed rgba(168, 85, 247, 0.4);
-    user-select: all;
-    min-width: 220px;
-    text-align: center;
-}
-
-/* Botón Copiar */
-.btn-copy {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    color: var(--text-light);
-    padding: 5px 12px;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.2s ease;
-    margin-left: 0; /* Pegado a la key */
-}
-
-.btn-copy:hover {
-    border-color: #a855f7;
-    color: #a855f7;
-    background: white;
-    box-shadow: 0 2px 5px rgba(168, 85, 247, 0.2);
-}
-
-.btn-copy svg { width: 14px; height: 14px; }
-
-/* MODO OSCURO */
-body.dark-mode .key-box {
-    background: rgba(168, 85, 247, 0.15);
-    border-color: rgba(168, 85, 247, 0.3);
-}
-body.dark-mode .key-code {
-    background: rgba(0, 0, 0, 0.3);
-    color: #e2e8f0;
-    border-color: rgba(168, 85, 247, 0.3);
-}
-body.dark-mode .btn-copy {
-    background: rgba(255,255,255,0.05);
-    border-color: rgba(255,255,255,0.1);
-    color: #cbd5e1;
-}
-body.dark-mode .btn-copy:hover {
-    border-color: #a855f7;
-    color: #a855f7;
-}
-
-/* RESPONSIVE MÓVIL */
-@media (max-width: 600px) {
-    .key-box {
-        flex-direction: column;
-        align-items: stretch;
-        text-align: center;
-        gap: 10px;
-    }
-    .key-code { width: 100%; }
-    .btn-copy { justify-content: center; }
-}
-
 /* --- ESTILO MINIMALISTA PARA COMPARTIR --- */
 .share-box-minimal {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(37, 99, 235, 0.05); /* Fondo azul muy sutil */
-    border: 1px dashed var(--accent); /* Borde punteado elegante */
+    background: rgba(37, 99, 235, 0.05);
+    border: 1px dashed var(--accent);
     border-radius: 8px;
     padding: 8px 15px;
     margin-bottom: 20px;
-    flex-wrap: wrap; /* Para móviles */
+    flex-wrap: wrap;
     gap: 10px;
 }
 
-.share-info {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.share-icon {
-    font-size: 1.2rem;
-}
-
-.share-label {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--primary);
-}
-
-.share-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex: 1;
-    justify-content: flex-end;
-    min-width: 250px; /* Asegura espacio para el input */
-}
-
+.share-info { display: flex; align-items: center; gap: 8px; }
+.share-icon { font-size: 1.2rem; }
+.share-label { font-size: 0.9rem; font-weight: 600; color: var(--primary); }
+.share-actions { display: flex; align-items: center; gap: 8px; flex: 1; justify-content: flex-end; min-width: 250px; }
 .share-input {
-    flex: 1;
-    max-width: 300px; /* No deja que se estire demasiado */
-    background: var(--bg-body);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 5px 10px;
-    font-size: 0.8rem;
-    color: var(--text-light);
-    height: 30px;
-    outline: none;
+    flex: 1; max-width: 300px; background: var(--bg-body); border: 1px solid var(--border);
+    border-radius: 4px; padding: 5px 10px; font-size: 0.8rem; color: var(--text-light); height: 30px; outline: none;
 }
 
 .btn-copy-mini {
-    background: var(--accent);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 0 12px;
-    height: 30px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    transition: background 0.2s;
-    white-space: nowrap;
+    background: var(--accent); color: white; border: none; border-radius: 4px;
+    padding: 0 12px; height: 30px; font-size: 0.8rem; font-weight: 600;
+    cursor: pointer; display: flex; align-items: center; gap: 5px; transition: background 0.2s; white-space: nowrap;
 }
+.btn-copy-mini:hover { background: var(--accent-hover); }
 
-.btn-copy-mini:hover {
-    background: var(--accent-hover);
-}
-
-/* Ajuste Móvil */
 @media (max-width: 600px) {
-    .share-box-minimal {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    .share-actions {
-        width: 100%;
-    }
-    .share-input {
-        max-width: 100%;
-    }
+    .share-box-minimal { flex-direction: column; align-items: flex-start; }
+    .share-actions { width: 100%; }
+    .share-input { max-width: 100%; }
 }
 
 /* =========================================
-   MODO PÓSTER VERTICAL (SOLO PARA ENEBA) - FINAL
-   Reemplaza el bloque anterior en perfil.css
+   MODO PÓSTER VERTICAL (SOLO PARA ENEBA)
    ========================================= */
-
-/* 1. Imágenes más pequeñas y compactas */
 .vertical-mode .game-thumb-profile {
     width: 70px !important;         
     height: 105px !important;       
-    aspect-ratio: 2 / 3;
-    object-fit: cover;
-    border-radius: 6px;             
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
-    transition: transform 0.3s ease;
-    display: block; 
-    margin: 0 auto; /* Centrado dentro de su espacio */
+    aspect-ratio: 2 / 3; object-fit: cover; border-radius: 6px;             
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: transform 0.3s ease;
+    display: block; margin: 0 auto;
+}
+.vertical-mode .game-thumb-profile:hover { transform: scale(1.05); }
+.vertical-mode td { vertical-align: middle !important; padding-top: 5px !important; padding-bottom: 5px !important; height: auto !important; }
+.vertical-mode th:first-child, .vertical-mode td:first-child { width: 110px; padding-left: 25px !important; padding-right: 10px !important; }
+.vertical-mode td:nth-child(2) { padding-left: 10px !important; }
+
+/* =========================================
+   NUEVO ESTILO DE HISTORIAL DE PEDIDOS (CARDS)
+   ========================================= */
+
+.orders-container { display: flex; flex-direction: column; gap: 15px; margin-top: 15px; }
+
+.order-list-header {
+    display: grid; grid-template-columns: 80px 120px 1fr 100px 100px 120px; gap: 15px;
+    padding: 0 20px 10px 20px; color: var(--text-light); font-size: 0.75rem;
+    font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+    border-bottom: 2px solid var(--border); margin-bottom: 5px;
 }
 
-.vertical-mode .game-thumb-profile:hover {
-    transform: scale(1.05);
+.order-card {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+    box-shadow: var(--shadow-sm); transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    overflow: hidden;
 }
 
-/* 2. Reducir espacio en blanco en las celdas de la tabla */
-.vertical-mode td {
-    vertical-align: middle !important; 
-    padding-top: 5px !important;       
-    padding-bottom: 5px !important;
-    height: auto !important; 
+.order-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: rgba(168, 85, 247, 0.4); }
+
+.order-main {
+    display: grid; grid-template-columns: 80px 120px 1fr 100px 100px 120px;
+    gap: 15px; padding: 15px 20px; align-items: center;
 }
 
-/* 3. Ajustar la columna de la imagen (AQUÍ ESTÁ EL CAMBIO) */
-.vertical-mode th:first-child,
-.vertical-mode td:first-child {
-    width: 110px; /* Un poco más ancho para dar espacio */
-    padding-left: 25px !important; /* MÁS MARGEN A LA IZQUIERDA */
-    padding-right: 10px !important;
+.order-date { font-size: 0.85rem; color: var(--text-light); font-weight: 500; }
+
+.order-img img {
+    width: 110px; height: 52px; object-fit: cover; border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: block; border: 1px solid var(--border);
 }
 
-/* Opcional: Ajustar texto para que no se pegue a la foto */
-.vertical-mode td:nth-child(2) {
-     padding-left: 10px !important; 
+.order-game-title {
+    font-weight: 700; color: var(--primary); font-size: 0.95rem; line-height: 1.3;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+.order-platform { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; }
+.order-price { font-weight: 600; color: var(--text-main); font-size: 0.95rem; }
+.order-status { text-align: right; }
+
+/* --- SECCIÓN INTEGRADA DE LA KEY --- */
+.order-key-section {
+    background: linear-gradient(90deg, rgba(168, 85, 247, 0.08) 0%, rgba(168, 85, 247, 0.02) 100%);
+    border-top: 1px solid rgba(168, 85, 247, 0.2); padding: 12px 20px;
+    display: flex; align-items: center; gap: 15px;
+}
+
+body.dark-mode .order-key-section {
+    background: rgba(168, 85, 247, 0.15); border-top: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.order-key-section .key-label {
+    font-size: 0.75rem; font-weight: 700; color: #a855f7;
+    text-transform: uppercase; letter-spacing: 1px;
+}
+
+.order-key-section .key-code {
+    font-family: 'Consolas', 'Monaco', monospace; font-size: 0.95rem; font-weight: 600;
+    color: var(--text-main); background: rgba(255, 255, 255, 0.6); padding: 6px 15px;
+    border-radius: 6px; border: 1px dashed rgba(168, 85, 247, 0.4);
+    user-select: all; min-width: 240px; text-align: center;
+}
+
+body.dark-mode .order-key-section .key-code { background: rgba(0, 0, 0, 0.3); color: #e2e8f0; }
+
+/* Estilos del botón Copiar rescatados del diseño anterior */
+.btn-copy {
+    background: var(--bg-card); border: 1px solid var(--border); color: var(--text-light);
+    padding: 5px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;
+    cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s ease;
+}
+
+.btn-copy:hover {
+    border-color: #a855f7; color: #a855f7; background: white;
+    box-shadow: 0 2px 5px rgba(168, 85, 247, 0.2);
+}
+
+.btn-copy svg { width: 14px; height: 14px; }
+
+body.dark-mode .btn-copy {
+    background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #cbd5e1;
+}
+
+body.dark-mode .btn-copy:hover { border-color: #a855f7; color: #a855f7; }
+
+/* =========================================
+   DISEÑO RESPONSIVE HISTORIAL (MÓVILES)
+   ========================================= */
+@media (max-width: 850px) {
+    .order-list-header { display: none; }
+    .order-main { grid-template-columns: 1fr; gap: 10px; text-align: center; padding: 20px; }
+    .order-img img { margin: 0 auto; width: 100%; max-width: 200px; height: auto; aspect-ratio: 16/9; }
+    .order-status { text-align: center; margin-top: 5px; }
+    .order-key-section { flex-direction: column; text-align: center; gap: 10px; }
+    .order-key-section .key-code { width: 100%; min-width: unset; }
+    .btn-copy { width: 100%; justify-content: center; }
 }
