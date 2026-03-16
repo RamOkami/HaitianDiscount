@@ -236,7 +236,7 @@ export function initStorePage(config) {
         }
 
         const alerta = document.getElementById('alerta-presupuesto');
-        if (precioFinal > presupuestoActual) {
+        if (precioOriginal > presupuestoActual) {
             if(alerta) alerta.classList.remove('hidden');
             btnEnviar.disabled = true;
         } else {
