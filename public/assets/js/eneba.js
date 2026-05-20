@@ -331,5 +331,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+
+
+
+//EVENTO MEOWL
+document.getElementById('btnCalcular').addEventListener('click', function() {
+    // Se muestra el precio y luego de 0.5 segundos sale el screamer
+    setTimeout(() => {
+        const overlay = document.getElementById('screamer-overlay');
+        if (overlay) {
+            overlay.style.display = 'flex';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 2000); // El screamer dura 2 segundos
+        }
+    }, 500); // El screamer aparece 0.5 segundo2 después de hacer clic
+});
+
 // Cargar reseñas
 loadFeedbackCompartido(db);

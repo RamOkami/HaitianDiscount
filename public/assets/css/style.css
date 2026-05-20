@@ -1089,3 +1089,57 @@ body.dark-mode .search-item:hover {
         grid-template-columns: 1fr;
     }
 }
+
+
+
+
+
+
+/* =========================================
+   EVENTO DE MEOWL
+   ========================================= */
+.resultado-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+    align-items: center;
+}
+
+/* Modificamos el contenedor de precios para que no tenga borde abajo, sino a la derecha */
+.result-pricing.no-border {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+    border-right: 1px dashed var(--border);
+    padding-right: 20px;
+}
+
+.resultado-imagen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Limitamos el tamaño de la imagen para que no deforme la tarjeta */
+.resultado-imagen img {
+    max-width: 100%;
+    max-height: 140px; 
+    object-fit: contain;
+    border-radius: 8px;
+    /* Opcional: Sutil sombra para que se vea más integrada */
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+}
+
+/* Modo Responsive: En celulares la imagen pasa a estar abajo del precio */
+@media (max-width: 600px) {
+    .resultado-grid {
+        grid-template-columns: 1fr;
+    }
+    .result-pricing.no-border {
+        border-right: none;
+        border-bottom: 1px dashed var(--border);
+        padding-right: 0;
+        padding-bottom: 20px;
+        margin-bottom: 10px;
+    }
+}
