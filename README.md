@@ -1,6 +1,7 @@
 # HaitianDiscount
-Repositorio del Descuento Haitiano
+#### Repositorio del Descuento Haitiano
 
+```
 Directory structure:
 └── ramokami-haitiandiscount/
     ├── README.md
@@ -35,3 +36,4 @@ Directory structure:
         └── workflows/
             ├── firebase-hosting-merge.yml
             └── firebase-hosting-pull-request.yml
+```
